@@ -1,9 +1,9 @@
 package com.money.manager.dao;
 
 import com.money.manager.dto.TimePeriod;
-import com.money.manager.entity.Budget;
-import com.money.manager.entity.Expense;
-import com.money.manager.entity.Wallet;
+import com.money.manager.model.Budget;
+import com.money.manager.model.Expense;
+import com.money.manager.model.Wallet;
 import com.money.manager.exception.CustomException;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;

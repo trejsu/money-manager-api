@@ -8,7 +8,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.money.manager.dao.HibernateUserDao;
 import com.money.manager.dao.UserDao;
-import com.money.manager.entity.User;
+import com.money.manager.model.User;
 import com.money.manager.exception.CustomException;
 
 import java.io.IOException;

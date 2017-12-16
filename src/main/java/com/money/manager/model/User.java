@@ -1,4 +1,4 @@
-package com.money.manager.entity;
+package com.money.manager.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

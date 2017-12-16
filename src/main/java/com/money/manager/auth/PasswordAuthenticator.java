@@ -4,7 +4,7 @@ import com.money.manager.auth.hash.Hasher;
 import com.money.manager.auth.hash.PBKDF2Hasher;
 import com.money.manager.dao.HibernateUserDao;
 import com.money.manager.dao.UserDao;
-import com.money.manager.entity.User;
+import com.money.manager.model.User;
 import com.money.manager.exception.CustomException;
 
 import java.security.NoSuchAlgorithmException;

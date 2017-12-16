@@ -28,7 +28,7 @@ public abstract class RegisterServlet {
         }
     }
 
-    private com.money.manager.entity.User initialize(RegistrantUser registrantUser) throws InvalidKeySpecException, NoSuchAlgorithmException {
+    private com.money.manager.model.User initialize(RegistrantUser registrantUser) throws InvalidKeySpecException, NoSuchAlgorithmException {
         setup(registrantUser);
         return UserFactory.getUserEntityFromRegistrantUser(registrantUser);
     }

@@ -2,7 +2,7 @@ package com.money.manager.api;
 
 import com.money.manager.dao.CategoryDao;
 import com.money.manager.dao.HibernateCategoryDao;
-import com.money.manager.entity.Category;
+import com.money.manager.model.Category;
 import com.money.manager.exception.CustomException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

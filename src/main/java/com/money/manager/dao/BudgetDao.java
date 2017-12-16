@@ -1,6 +1,6 @@
 package com.money.manager.dao;
 
-import com.money.manager.entity.Budget;
+import com.money.manager.model.Budget;
 
-public interface BudgetDao extends GenericDao<Budget, Integer> {
+public interface BudgetDao extends GenericUserRelatedDao<Budget>, GenericCrudDao<Budget, Integer> {
 }

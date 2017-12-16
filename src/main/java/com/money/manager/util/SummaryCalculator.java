@@ -1,7 +1,7 @@
 package com.money.manager.util;
 
 import com.money.manager.dto.Summary;
-import com.money.manager.entity.Expense;
+import com.money.manager.model.Expense;
 
 import java.math.BigDecimal;
 import java.util.List;

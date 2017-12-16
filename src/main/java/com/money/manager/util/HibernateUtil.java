@@ -1,13 +1,12 @@
 package com.money.manager.util;
 
-import com.money.manager.entity.Budget;
-import com.money.manager.entity.Category;
-import com.money.manager.entity.Expense;
-import com.money.manager.entity.Saving;
-import com.money.manager.entity.User;
-import com.money.manager.entity.Wallet;
+import com.money.manager.model.Budget;
+import com.money.manager.model.Category;
+import com.money.manager.model.Expense;
+import com.money.manager.model.Saving;
+import com.money.manager.model.User;
+import com.money.manager.model.Wallet;
 import com.money.manager.exception.CustomException;
-import com.money.manager.exception.DatabaseConnectionException;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;

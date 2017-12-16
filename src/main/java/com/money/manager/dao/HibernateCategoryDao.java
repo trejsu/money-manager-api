@@ -1,6 +1,6 @@
 package com.money.manager.dao;
 
-import com.money.manager.entity.Category;
+import com.money.manager.model.Category;
 import com.money.manager.exception.CustomException;
 
 import java.util.List;

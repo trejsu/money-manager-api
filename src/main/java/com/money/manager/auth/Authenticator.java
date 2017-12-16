@@ -1,6 +1,6 @@
 package com.money.manager.auth;
 
-import com.money.manager.entity.User;
+import com.money.manager.model.User;
 import com.money.manager.exception.CustomException;
 
 import java.security.NoSuchAlgorithmException;

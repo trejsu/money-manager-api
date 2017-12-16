@@ -1,25 +1,35 @@
 package com.money.manager.api;
 
+import com.money.manager.dao.BudgetDao;
+import com.money.manager.dao.ExpenseDao;
 import com.money.manager.dao.UserDao;
 import com.money.manager.dao.WalletDao;
 import com.money.manager.dto.NoExpensesWallet;
 import com.money.manager.dto.NoPasswordUser;
 import com.money.manager.dto.Summary;
 import com.money.manager.dto.TimePeriod;
-import com.money.manager.entity.Budget;
-import com.money.manager.entity.Expense;
+import com.money.manager.exception.UserNotFoundException;
+import com.money.manager.model.Budget;
+import com.money.manager.model.Category;
+import com.money.manager.model.Expense;
 import com.money.manager.exception.CustomException;
 import com.money.manager.factory.WalletFactory;
+import com.money.manager.model.User;
 import com.money.manager.util.SummaryCalculator;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -39,11 +49,15 @@ public class UserController {
 
     private final UserDao userDao;
     private final WalletDao walletDao;
+    private final BudgetDao budgetDao;
+    private final ExpenseDao expenseDao;
 
     @Autowired
-    public UserController(UserDao userDao, WalletDao walletDao) {
+    public UserController(UserDao userDao, WalletDao walletDao, BudgetDao budgetDao, ExpenseDao expenseDao) {
         this.userDao = userDao;
         this.walletDao = walletDao;
+        this.budgetDao = budgetDao;
+        this.expenseDao = expenseDao;
     }
 
     @GetMapping(produces = APPLICATION_JSON_VALUE)
@@ -59,7 +73,7 @@ public class UserController {
     }
 
     @PutMapping(value = "/{login}", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    public <T> void updateUser(@PathVariable("login") String login, @RequestParam("field") String field, LinkedHashMap<String, T> value) throws CustomException {
+    public <T> void updateUser(@PathVariable("login") String login, @RequestParam("field") String field, @RequestBody LinkedHashMap<String, T> value) throws CustomException {
         System.out.println("value = " + value);
         userDao.updateField(login, field, value.get(field));
     }
@@ -80,7 +94,7 @@ public class UserController {
     }
 
     @PostMapping(value = "/{login}/wallets", consumes = APPLICATION_JSON_VALUE)
-    public void createWallet(@PathVariable("login") String login, NoExpensesWallet noExpensesWallet) throws CustomException {
+    public void createWallet(@PathVariable("login") String login, @RequestBody NoExpensesWallet noExpensesWallet) throws CustomException {
         userDao.addWallet(login, getWalletEntityFromNoExpensesWallet(noExpensesWallet));
         userDao.addWallet(login, getWalletEntityFromNoExpensesWallet(noExpensesWallet));
     }
@@ -126,7 +140,7 @@ public class UserController {
     public void createExpense(
             @PathVariable("login") String login,
             @PathVariable("id") Integer id,
-            Expense expense
+            @RequestBody Expense expense
     ) throws CustomException {
             walletDao.addExpense(login, id, expense);
 
@@ -154,9 +168,41 @@ public class UserController {
         return userDao.getBudgetsByLoginAndTimePeriod(login, new TimePeriod(startMin, startMax), new TimePeriod(endMin, endMax));
     }
 
-    // todo: date validation
+
     @PostMapping(value = "/{login}/budgets", consumes = APPLICATION_JSON_VALUE)
-    public void createBudget(@PathVariable("login") String login, Budget budget) throws CustomException {
-        userDao.addBudget(login, budget);
+    public void createBudget(@PathVariable("login") String login, @Valid @RequestBody BudgetInputDto budget) throws CustomException {
+        User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
+        budgetDao.addToUser(budget.toBudget(calculateCurrent(login, budget)), user);
+    }
+
+    // todo: move to service
+    private BigDecimal calculateCurrent(String login, BudgetInputDto budget) throws CustomException {
+        return expenseDao.getSummaryByUserTimePeriodAndCategory(
+                login,
+                budget.getTimePeriod(),
+                budget.getCategory()
+        );
+    }
+
+    @Data
+    @NoArgsConstructor
+    static class BudgetInputDto {
+        @NotNull
+        private Category category;
+        @NotNull
+        private BigDecimal total;
+        @Valid
+        @NotNull
+        private TimePeriod timePeriod;
+
+        public Budget toBudget(BigDecimal current) {
+            return Budget.builder()
+                    .category(category)
+                    .total(total)
+                    .start(timePeriod.getStart())
+                    .end(timePeriod.getEnd())
+                    .current(current)
+                    .build();
+        }
     }
 }

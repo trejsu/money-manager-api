@@ -3,7 +3,7 @@ package com.money.manager.factory;
 import com.money.manager.dao.HibernateUserDao;
 import com.money.manager.dao.UserDao;
 import com.money.manager.dto.NoExpensesWallet;
-import com.money.manager.entity.Wallet;
+import com.money.manager.model.Wallet;
 import com.money.manager.exception.CustomException;
 
 import java.math.BigDecimal;

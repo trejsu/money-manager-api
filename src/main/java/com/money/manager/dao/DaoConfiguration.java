@@ -13,7 +13,7 @@ public class DaoConfiguration {
 
     @Bean
     public BudgetDao budgetDao() {
-        return new HibernateBudgetDao();
+        return new HibernateBudgetDao(userDao());
     }
 
     @Bean

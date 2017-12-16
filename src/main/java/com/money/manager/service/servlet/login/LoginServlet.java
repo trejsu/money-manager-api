@@ -2,7 +2,7 @@ package com.money.manager.service.servlet.login;
 
 import com.money.manager.auth.Authenticator;
 import com.money.manager.dto.AuthenticationData;
-import com.money.manager.entity.User;
+import com.money.manager.model.User;
 import com.money.manager.exception.CustomException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

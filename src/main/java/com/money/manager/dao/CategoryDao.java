@@ -1,6 +1,6 @@
 package com.money.manager.dao;
 
-import com.money.manager.entity.Category;
+import com.money.manager.model.Category;
 
-public interface CategoryDao extends GenericDao<Category, Category.CategoryPK> {
+public interface CategoryDao extends GenericCrudDao<Category, Category.CategoryPK> {
 }

@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 
-public interface GenericDao <T, PK extends Serializable> {
+public interface GenericCrudDao<T, PK extends Serializable> {
     PK add(T newInstance) throws CustomException;
     Optional<T> get(PK id) throws CustomException;
     void update(T transientObject) throws CustomException;

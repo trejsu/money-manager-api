@@ -1,9 +1,9 @@
 package com.money.manager.dao;
 
 import com.money.manager.dto.TimePeriod;
-import com.money.manager.entity.Budget;
-import com.money.manager.entity.User;
-import com.money.manager.entity.Wallet;
+import com.money.manager.model.Budget;
+import com.money.manager.model.User;
+import com.money.manager.model.Wallet;
 import com.money.manager.exception.BadRequestException;
 import com.money.manager.exception.CustomException;
 import com.money.manager.exception.LoginAlreadyTakenException;
@@ -138,28 +138,6 @@ public class HibernateUserDao implements UserDao {
             return BigDecimal.valueOf(0);
         }
         return sum;
-    }
-
-    @Override
-    public void addBudget(String login, Budget budget) throws CustomException {
-        User user = get(login).orElseThrow(() -> buildUserNotFoundException(login));
-        budget.setCurrent(calculateCurrent(login, budget));
-        executeQuery(session -> {
-            user.getBudgets().add(budget);
-            update(user);
-            return user;
-        });
-    }
-
-    private BigDecimal calculateCurrent(String login, Budget budget) throws CustomException {
-        return expenseDao.getSummaryByUserTimePeriodAndCategory(
-                login,
-                new TimePeriod(
-                        budget.getStart(),
-                        budget.getEnd()
-                ),
-                budget.getCategory()
-        );
     }
 
     private UserNotFoundException buildUserNotFoundException(String login) {

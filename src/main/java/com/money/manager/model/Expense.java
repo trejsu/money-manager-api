@@ -1,4 +1,4 @@
-package com.money.manager.entity;
+package com.money.manager.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,30 +23,26 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Getter
 @Setter
 @Entity
-@Table(name = "BUDGET")
-public class Budget {
-
+@Table(name = "EXPENSE")
+public class Expense {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "ID")
     private Integer id;
 
-    @ManyToOne(cascade = CascadeType.MERGE)
+    @Column(name = "message")
+    private String message;
+
+    @Column(name = "date")
+    private String date;
+
+    @Column(name = "amount")
+    private BigDecimal amount;
+
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "category_name", referencedColumnName = "name"),
             @JoinColumn(name = "category_profit", referencedColumnName = "profit")
     })
     private Category category;
-
-    @Column(name = "total")
-    private BigDecimal total;
-
-    @Column(name = "current")
-    private BigDecimal current;
-
-    @Column(name = "start_date")
-    private String start;
-
-    @Column(name = "end_date")
-    private String end;
 }
