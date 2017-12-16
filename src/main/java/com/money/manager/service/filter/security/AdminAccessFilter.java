@@ -1,6 +1,4 @@
-package com.money.manager.services.filter.security;
-
-import com.money.manager.entity.User;
+package com.money.manager.service.filter.security;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;

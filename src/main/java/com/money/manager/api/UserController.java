@@ -1,7 +1,5 @@
-package com.money.manager.services.resource;
+package com.money.manager.api;
 
-import com.money.manager.dao.HibernateUserDao;
-import com.money.manager.dao.HibernateWalletDao;
 import com.money.manager.dao.UserDao;
 import com.money.manager.dao.WalletDao;
 import com.money.manager.dto.NoExpensesWallet;
@@ -13,6 +11,7 @@ import com.money.manager.entity.Expense;
 import com.money.manager.exception.CustomException;
 import com.money.manager.factory.WalletFactory;
 import com.money.manager.util.SummaryCalculator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,10 +35,16 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/resources/users")
-public class UsersResource {
+public class UserController {
 
-    private final static UserDao userDao = new HibernateUserDao();
-    private final static WalletDao walletDao = new HibernateWalletDao();
+    private final UserDao userDao;
+    private final WalletDao walletDao;
+
+    @Autowired
+    public UserController(UserDao userDao, WalletDao walletDao) {
+        this.userDao = userDao;
+        this.walletDao = walletDao;
+    }
 
     @GetMapping(produces = APPLICATION_JSON_VALUE)
     public List<NoPasswordUser> getUsers() throws CustomException {

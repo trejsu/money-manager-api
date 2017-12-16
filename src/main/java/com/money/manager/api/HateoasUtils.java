@@ -1,4 +1,4 @@
-package com.money.manager.services.resource;
+package com.money.manager.api;
 
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.web.util.UriComponentsBuilder;

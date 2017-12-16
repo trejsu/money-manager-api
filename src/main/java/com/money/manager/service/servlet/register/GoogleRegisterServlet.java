@@ -1,4 +1,4 @@
-package com.money.manager.services.servlet.register;
+package com.money.manager.service.servlet.register;
 
 import com.money.manager.dto.RegistrantUser;
 import org.springframework.web.bind.annotation.RequestMapping;

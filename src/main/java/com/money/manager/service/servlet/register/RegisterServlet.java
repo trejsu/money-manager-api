@@ -1,4 +1,4 @@
-package com.money.manager.services.servlet.register;
+package com.money.manager.service.servlet.register;
 
 import com.money.manager.dao.HibernateUserDao;
 import com.money.manager.dao.UserDao;

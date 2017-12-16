@@ -1,4 +1,4 @@
-package com.money.manager.services.servlet.login;
+package com.money.manager.service.servlet.login;
 
 import com.money.manager.auth.Authenticator;
 import com.money.manager.auth.GoogleAuthenticator;

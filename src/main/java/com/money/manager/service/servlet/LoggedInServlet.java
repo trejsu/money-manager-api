@@ -1,4 +1,4 @@
-package com.money.manager.services.servlet;
+package com.money.manager.service.servlet;
 
 import com.money.manager.dto.NoPasswordUser;
 import com.money.manager.entity.User;

@@ -1,10 +1,7 @@
-package com.money.manager.services.filter.security;
-
-import com.money.manager.entity.User;
+package com.money.manager.service.filter.security;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.Objects;
 
 // todo: after login user should return to desired page
 public class ResourceAccessFilter extends AuthorizationFilter {

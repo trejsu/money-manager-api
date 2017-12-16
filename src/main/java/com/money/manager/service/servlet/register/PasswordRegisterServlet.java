@@ -1,4 +1,4 @@
-package com.money.manager.services.servlet.register;
+package com.money.manager.service.servlet.register;
 
 import com.money.manager.auth.hash.Hasher;
 import com.money.manager.auth.hash.PBKDF2Hasher;

@@ -1,4 +1,4 @@
-package com.money.manager.services.resource;
+package com.money.manager.api;
 
 import com.money.manager.dao.CategoryDao;
 import com.money.manager.dao.HibernateCategoryDao;
@@ -15,7 +15,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/resources/categories")
-public class CategoriesResource {
+public class CategoryController {
 
     private final static CategoryDao categoryDao = new HibernateCategoryDao();
 

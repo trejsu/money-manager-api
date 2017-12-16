@@ -5,12 +5,14 @@ import com.money.manager.entity.Budget;
 import com.money.manager.entity.Expense;
 import com.money.manager.entity.Wallet;
 import com.money.manager.exception.CustomException;
-import com.money.manager.util.LocalDateParser;
 import org.hibernate.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import javax.persistence.NoResultException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,14 +22,22 @@ import java.util.Optional;
 import static com.money.manager.util.HibernateUtil.executeQuery;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 
+@Service
 public class HibernateWalletDao implements WalletDao {
 
-    private final LocalDateParser localDateParser = new LocalDateParser(ISO_LOCAL_DATE);
-    private final static BudgetDao budgetDao = new HibernateBudgetDao();
-    private final static UserDao userDao = new HibernateUserDao();
-    private final static ExpenseDao expenseDao = new HibernateExpenseDao();
+    private final static int ID_OF_SUMMARY_WALLET = 0;
+    private final static DateTimeFormatter DATE_TIME_FORMATTER = ISO_LOCAL_DATE;
 
-    private final int ID_OF_SUMMARY_WALLET = 0;
+    private final BudgetDao budgetDao;
+    private final UserDao userDao;
+    private final ExpenseDao expenseDao;
+
+    @Autowired
+    public HibernateWalletDao(BudgetDao budgetDao, UserDao userDao, ExpenseDao expenseDao) {
+        this.budgetDao = budgetDao;
+        this.userDao = userDao;
+        this.expenseDao = expenseDao;
+    }
 
     @Override
     public Integer add(Wallet newInstance) throws CustomException {
@@ -201,7 +211,7 @@ public class HibernateWalletDao implements WalletDao {
     }
 
     private String getToday() {
-        return localDateParser.parseToString(LocalDate.now());
+        return LocalDate.now().format(DATE_TIME_FORMATTER);
     }
 
     private void updateAmount(Wallet wallet, Expense expense) {
