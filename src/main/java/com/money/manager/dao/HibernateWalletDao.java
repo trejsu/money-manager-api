@@ -3,6 +3,7 @@ package com.money.manager.dao;
 import com.money.manager.dto.TimePeriod;
 import com.money.manager.model.Budget;
 import com.money.manager.model.Expense;
+import com.money.manager.model.User;
 import com.money.manager.model.Wallet;
 import com.money.manager.exception.CustomException;
 import org.hibernate.query.Query;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.NoResultException;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -21,70 +21,18 @@ import java.util.Optional;
 
 import static com.money.manager.util.HibernateUtil.executeQuery;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static java.util.Comparator.comparingInt;
 
 @Service
 public class HibernateWalletDao implements WalletDao {
 
     private final static int ID_OF_SUMMARY_WALLET = 0;
-    private final static DateTimeFormatter DATE_TIME_FORMATTER = ISO_LOCAL_DATE;
 
-    private final BudgetDao budgetDao;
     private final UserDao userDao;
-    private final ExpenseDao expenseDao;
 
     @Autowired
-    public HibernateWalletDao(BudgetDao budgetDao, UserDao userDao, ExpenseDao expenseDao) {
-        this.budgetDao = budgetDao;
+    public HibernateWalletDao(UserDao userDao) {
         this.userDao = userDao;
-        this.expenseDao = expenseDao;
-    }
-
-    @Override
-    public Integer add(Wallet newInstance) throws CustomException {
-        return executeQuery(session -> (Integer) session.save(newInstance));
-    }
-
-    @Override
-    public Optional<Wallet> get(Integer id) throws CustomException {
-        return Optional.of(executeQuery(session -> session.get(Wallet.class, id)));
-    }
-
-    @Override
-    public void update(Wallet transientObject) throws CustomException {
-        executeQuery(session -> {
-            session.update(transientObject);
-            return transientObject;
-        });
-    }
-
-    @Override
-    public void delete(Wallet persistentObject) throws CustomException {
-        executeQuery(session -> {
-            session.delete(persistentObject);
-            return persistentObject;
-        });
-    }
-
-    @Override
-    public List<Wallet> findAll() throws CustomException {
-        return executeQuery(session ->
-                        session
-                                .createQuery("FROM Wallet", Wallet.class)
-                                .list());
-    }
-
-    @Override
-    public void addExpense(String login, Integer id, Expense expense) throws CustomException {
-        executeQuery(session -> {
-            expense.setDate(getToday());
-            // todo: fix atomicity
-            expenseDao.add(expense);
-            Wallet wallet = session.get(Wallet.class, id);
-            wallet.getExpenses().add(expense);
-            updateAmount(wallet, expense);
-            return session.save(wallet);
-        });
-        updateBudgets(login, expense);
     }
 
     // todo: it fits more to expenses dao
@@ -200,25 +148,34 @@ public class HibernateWalletDao implements WalletDao {
         return (id == ID_OF_SUMMARY_WALLET) ? "WHERE u.login = :id " : "WHERE w.id = :id ";
     }
 
-    private void updateBudgets(String login, Expense expense) throws CustomException {
-        List<Budget> budgets = userDao.getBudgetsByLoginAndTimePeriod(login, new TimePeriod(null, getToday()), new TimePeriod(getToday(), null));
-        for (Budget budget : budgets) {
-            if (budget.getCategory().getName().equals(expense.getCategory().getName())) {
-                budget.setCurrent(budget.getCurrent().add(expense.getAmount()));
-                budgetDao.update(budget);
-            }
-        }
+    @Override
+    public void addToUser(Wallet newInstance, User user) throws CustomException {
+        executeQuery(session -> {
+            user.getWallets().add(newInstance);
+            userDao.update(user);
+            return user;
+        });
     }
 
-    private String getToday() {
-        return LocalDate.now().format(DATE_TIME_FORMATTER);
+    @Override
+    public List<Wallet> getAllFromUser(User user) throws CustomException {
+        final List<Wallet> wallets = user.getWallets();
+        wallets.sort(comparingInt(Wallet::getId));
+        return wallets;
     }
 
-    private void updateAmount(Wallet wallet, Expense expense) {
-        BigDecimal amount = expense.getAmount();
-        if (!expense.getCategory().isProfit()) {
-            amount = amount.negate();
-        }
-        wallet.setAmount(wallet.getAmount().add(amount));
+    @Override
+    public BigDecimal getSummaryAmountForUser(User user) throws CustomException {
+        BigDecimal sum = executeQuery(session -> {
+            String query =
+                    "SELECT sum(w.amount) FROM User u " +
+                            "JOIN u.wallets w " +
+                            "WHERE u.login = :login";
+            return session
+                    .createQuery(query, BigDecimal.class)
+                    .setParameter("login" , user.getLogin())
+                    .getSingleResult();
+        });
+        return Optional.ofNullable(sum).orElse(BigDecimal.ZERO);
     }
 }

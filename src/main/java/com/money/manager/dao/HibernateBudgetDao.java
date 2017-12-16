@@ -1,5 +1,6 @@
 package com.money.manager.dao;
 
+import com.money.manager.dto.TimePeriod;
 import com.money.manager.model.Budget;
 import com.money.manager.model.User;
 import com.money.manager.exception.CustomException;
@@ -31,16 +32,6 @@ public class HibernateBudgetDao implements BudgetDao {
     }
 
     @Override
-    public Integer add(Budget newInstance) throws CustomException {
-        return null;
-    }
-
-    @Override
-    public Optional<Budget> get(Integer id) throws CustomException {
-        return null;
-    }
-
-    @Override
     public void update(Budget transientObject) throws CustomException {
         executeQuery(session -> {
             session.update(transientObject);
@@ -49,12 +40,25 @@ public class HibernateBudgetDao implements BudgetDao {
     }
 
     @Override
-    public void delete(Budget persistentObject) throws CustomException {
-
-    }
-
-    @Override
-    public List<Budget> findAll() throws CustomException {
-        return null;
+    public List<Budget> getFromUserAndTimePeriod(User user, TimePeriod start, TimePeriod end) throws CustomException {
+        return executeQuery(session -> {
+            String query =
+                    "SELECT b FROM User u " +
+                            "JOIN u.budgets b " +
+                            "WHERE u.login = :login " +
+                            "AND b.start >= :start_min " +
+                            "AND b.start <= :start_max " +
+                            "AND b.end >= :end_min " +
+                            "AND b.end <= :end_max " +
+                            "ORDER BY b.id DESC";
+            return session
+                    .createQuery(query, Budget.class)
+                    .setParameter("login", user.getLogin())
+                    .setParameter("start_min", start.getStart())
+                    .setParameter("start_max" , start.getEnd())
+                    .setParameter("end_min", end.getStart())
+                    .setParameter("end_max" , end.getEnd())
+                    .list();
+        });
     }
 }

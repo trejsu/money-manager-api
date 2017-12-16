@@ -18,31 +18,4 @@ public class HibernateCategoryDao implements CategoryDao {
                 .list()
         );
     }
-
-    @Override
-    public Category.CategoryPK add(Category newInstance) throws CustomException {
-        return executeQuery(session -> (Category.CategoryPK) session.save(newInstance));
-    }
-
-    @Override
-    public Optional<Category> get(Category.CategoryPK id) throws CustomException {
-        return Optional.ofNullable(executeQuery(
-                session -> session.get(Category.class, id)));
-    }
-
-    @Override
-    public void update(Category transientObject) throws CustomException {
-        executeQuery(session -> {
-            session.update(transientObject);
-            return transientObject;
-        });
-    }
-
-    @Override
-    public void delete(Category persistentObject) throws CustomException {
-        executeQuery(session -> {
-            session.delete(persistentObject);
-            return persistentObject;
-        });
-    }
 }
