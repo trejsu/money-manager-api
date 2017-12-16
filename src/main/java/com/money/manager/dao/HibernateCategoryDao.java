@@ -16,21 +16,18 @@ public class HibernateCategoryDao implements CategoryDao {
             session
                 .createQuery("FROM Category", Category.class)
                 .list()
-        , "Retrieving categories failed.");
+        );
     }
 
     @Override
     public Category.CategoryPK add(Category newInstance) throws CustomException {
-        return executeQuery(session -> (Category.CategoryPK) session.save(newInstance),
-                "Adding category failed.");
+        return executeQuery(session -> (Category.CategoryPK) session.save(newInstance));
     }
 
     @Override
     public Optional<Category> get(Category.CategoryPK id) throws CustomException {
         return Optional.ofNullable(executeQuery(
-                session -> session.get(Category.class, id),
-                "Retrieving category with id " + id + " failed."
-        ));
+                session -> session.get(Category.class, id)));
     }
 
     @Override
@@ -38,7 +35,7 @@ public class HibernateCategoryDao implements CategoryDao {
         executeQuery(session -> {
             session.update(transientObject);
             return transientObject;
-        }, "Updating category failed.");
+        });
     }
 
     @Override
@@ -46,6 +43,6 @@ public class HibernateCategoryDao implements CategoryDao {
         executeQuery(session -> {
             session.delete(persistentObject);
             return persistentObject;
-        }, "Removing category failed.");
+        });
     }
 }

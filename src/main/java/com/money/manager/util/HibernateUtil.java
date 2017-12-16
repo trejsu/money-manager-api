@@ -16,6 +16,7 @@ import org.hibernate.cfg.Configuration;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Optional;
 
 public class HibernateUtil {
 
@@ -74,7 +75,7 @@ public class HibernateUtil {
         sessionFactory.close();
     }
 
-    public static <T>T executeQuery(QueryFunction<Session, T> query, String errorMessage) throws CustomException {
+    public static <T>T executeQuery(QueryFunction<Session, T> query) throws CustomException {
         Transaction transaction = null;
         T returned;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -82,15 +83,9 @@ public class HibernateUtil {
             returned = query.apply(session);
             transaction.commit();
         } catch (HibernateException e) {
-            handleHibernateException(transaction, e);
-            throw new DatabaseConnectionException(errorMessage);
+            Optional.ofNullable(transaction).ifPresent(Transaction::rollback);
+            throw e;
         }
         return returned;
-    }
-
-    private static void handleHibernateException(Transaction transaction, HibernateException e) {
-        System.out.println(e.getMessage());
-        if (transaction != null) transaction.rollback();
-        e.printStackTrace();
     }
 }

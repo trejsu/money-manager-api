@@ -25,8 +25,7 @@ public class HibernateUserDao implements UserDao {
     @Override
     public String add(User newInstance) throws CustomException {
         checkLoginAvailability(newInstance);
-        return executeQuery(session -> (String) session.save(newInstance),
-                "Adding new user failed.");
+        return executeQuery(session -> (String) session.save(newInstance));
     }
 
     private void checkLoginAvailability(User newInstance) throws CustomException {
@@ -40,8 +39,7 @@ public class HibernateUserDao implements UserDao {
     @Override
     public Optional<User> get(String id) throws CustomException {
         return Optional.ofNullable(executeQuery(
-                session -> session.get(User.class, id),
-                "Retrieving user with id " + id + " failed."
+                session -> session.get(User.class, id)
         ));
     }
 
@@ -50,7 +48,7 @@ public class HibernateUserDao implements UserDao {
         executeQuery(session -> {
             session.update(transientObject);
             return transientObject;
-        }, "Updating user failed.");
+        });
     }
 
     @Override
@@ -58,14 +56,14 @@ public class HibernateUserDao implements UserDao {
         executeQuery(session -> {
             session.delete(persistentObject);
             return persistentObject;
-        }, "Removing user failed.");
+        });
     }
 
     @Override
     public List<User> findAll() throws CustomException {
         return executeQuery(session -> session
                 .createQuery("FROM User", User.class)
-                .list(), "Retrieving users failed.");
+                .list());
     }
 
     @Override
@@ -75,7 +73,7 @@ public class HibernateUserDao implements UserDao {
             user.getWallets().add(wallet);
             update(user);
             return user;
-        }, "Adding new wallet to " + login + " failed.");
+        });
     }
 
     @Override
@@ -99,7 +97,7 @@ public class HibernateUserDao implements UserDao {
                     .setParameter("end_min", end.getStart())
                     .setParameter("end_max" , end.getEnd())
                     .list();
-        }, "Retrieving expenses failed");
+        });
     }
 
     @Override
@@ -135,7 +133,7 @@ public class HibernateUserDao implements UserDao {
                     .createQuery(query, BigDecimal.class)
                     .setParameter("login" , login)
                     .getSingleResult();
-        }, "Retrieving wallets failed");
+        });
         if (sum == null) {
             return BigDecimal.valueOf(0);
         }
@@ -150,7 +148,7 @@ public class HibernateUserDao implements UserDao {
             user.getBudgets().add(budget);
             update(user);
             return user;
-        }, "Adding new budget to " + login + " failed.");
+        });
     }
 
     private BigDecimal calculateCurrent(String login, Budget budget) throws CustomException {

@@ -12,16 +12,13 @@ public class HibernateBudgetDao implements BudgetDao {
 
     @Override
     public Integer add(Budget newInstance) throws CustomException {
-        return executeQuery(session -> (Integer) session.save(newInstance),
-                "Adding budget failed.");
+        return executeQuery(session -> (Integer) session.save(newInstance));
     }
 
     @Override
     public Optional<Budget> get(Integer id) throws CustomException {
         return Optional.ofNullable(executeQuery(
-                session -> session.get(Budget.class, id),
-                "Retrieving budget with id " + id + " failed."
-        ));
+                session -> session.get(Budget.class, id)));
     }
 
     @Override
@@ -29,7 +26,7 @@ public class HibernateBudgetDao implements BudgetDao {
         executeQuery(session -> {
             session.update(transientObject);
             return transientObject;
-        }, "Updating budget failed.");
+        });
     }
 
     @Override
@@ -37,7 +34,7 @@ public class HibernateBudgetDao implements BudgetDao {
         executeQuery(session -> {
             session.delete(persistentObject);
             return persistentObject;
-        }, "Removing budget failed.");
+        });
     }
 
     @Override
@@ -46,6 +43,6 @@ public class HibernateBudgetDao implements BudgetDao {
                         session
                             .createQuery("FROM Budget", Budget.class)
                             .list()
-                , "Retrieving budgets failed.");
+        );
     }
 }

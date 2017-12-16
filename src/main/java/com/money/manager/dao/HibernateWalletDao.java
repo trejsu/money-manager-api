@@ -31,14 +31,12 @@ public class HibernateWalletDao implements WalletDao {
 
     @Override
     public Integer add(Wallet newInstance) throws CustomException {
-        return executeQuery(session -> (Integer) session.save(newInstance),
-                "Adding wallet failed.");
+        return executeQuery(session -> (Integer) session.save(newInstance));
     }
 
     @Override
     public Optional<Wallet> get(Integer id) throws CustomException {
-        return Optional.of(executeQuery(session -> session.get(Wallet.class, id),
-                "Retrieving wallet with id " + id + " failed"));
+        return Optional.of(executeQuery(session -> session.get(Wallet.class, id)));
     }
 
     @Override
@@ -46,7 +44,7 @@ public class HibernateWalletDao implements WalletDao {
         executeQuery(session -> {
             session.update(transientObject);
             return transientObject;
-        }, "Updating wallet failed.");
+        });
     }
 
     @Override
@@ -54,7 +52,7 @@ public class HibernateWalletDao implements WalletDao {
         executeQuery(session -> {
             session.delete(persistentObject);
             return persistentObject;
-        }, "Removing user failed.");
+        });
     }
 
     @Override
@@ -62,8 +60,7 @@ public class HibernateWalletDao implements WalletDao {
         return executeQuery(session ->
                         session
                                 .createQuery("FROM Wallet", Wallet.class)
-                                .list()
-                , "Retrieving categories failed.");
+                                .list());
     }
 
     @Override
@@ -76,7 +73,7 @@ public class HibernateWalletDao implements WalletDao {
             wallet.getExpenses().add(expense);
             updateAmount(wallet, expense);
             return session.save(wallet);
-        }, "Adding new expense to wallet with id " + id + " failed.");
+        });
         updateBudgets(login, expense);
     }
 
@@ -107,7 +104,7 @@ public class HibernateWalletDao implements WalletDao {
                     .setParameter("end" , timePeriod.getEnd())
                     .setMaxResults(getMaxResults(limit))
                     .list();
-        }, "Retrieving expenses failed");
+        });
     }
 
     @Override
@@ -134,7 +131,7 @@ public class HibernateWalletDao implements WalletDao {
             } catch(NoResultException e) {
                 return null;
             }
-        }, "Retrieving expenses failed");
+        });
     }
 
     @Override
@@ -159,7 +156,7 @@ public class HibernateWalletDao implements WalletDao {
                     .setParameter("transfer", "transfer")
                     .setParameter("end", timePeriod.getEnd());
             return getMapFromQuery(query.list());
-        }, "Retrieving expenses failed");
+        });
     }
 
     private Map<String, BigDecimal> getMapFromQuery(List list) {

@@ -15,15 +15,13 @@ public class HibernateExpenseDao implements ExpenseDao {
 
     @Override
     public Integer add(Expense newInstance) throws CustomException {
-        return executeQuery(session -> (Integer) session.save(newInstance),
-                "Adding expense failed.");
+        return executeQuery(session -> (Integer) session.save(newInstance));
     }
 
     @Override
     public Optional<Expense> get(Integer id) throws CustomException {
         return Optional.ofNullable(executeQuery(
-                session -> session.get(Expense.class, id),
-                "Retrieving expense with id " + id + " failed."
+                session -> session.get(Expense.class, id)
         ));
     }
 
@@ -33,7 +31,7 @@ public class HibernateExpenseDao implements ExpenseDao {
         executeQuery(session -> {
             session.update(transientObject);
             return transientObject;
-        }, "Updating expense failed.");
+        });
     }
 
     @Override
@@ -41,7 +39,7 @@ public class HibernateExpenseDao implements ExpenseDao {
         executeQuery(session -> {
             session.delete(persistentObject);
             return persistentObject;
-        }, "Removing expense failed.");
+        });
     }
 
     @Override
@@ -49,8 +47,7 @@ public class HibernateExpenseDao implements ExpenseDao {
         return executeQuery(session ->
                         session
                                 .createQuery("FROM Expense", Expense.class)
-                                .list()
-                , "Retrieving categories failed.");
+                                .list());
     }
 
     @Override
@@ -74,7 +71,7 @@ public class HibernateExpenseDao implements ExpenseDao {
                     .setParameter("start", timePeriod.getStart())
                     .setParameter("end" , timePeriod.getEnd())
                     .getSingleResult();
-        }, "Retrieving expenses failed");
+        });
         if (sum == null) {
             return BigDecimal.valueOf(0);
         }
