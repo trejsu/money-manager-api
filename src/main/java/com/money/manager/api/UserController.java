@@ -85,8 +85,8 @@ public class UserController {
 
     // todo: move it from here
     private List<NoExpensesWallet> getNoExpensesWallets(String login) throws CustomException {
-        List<NoExpensesWallet> wallets = new LinkedList<>(singletonList(WalletFactory.getSummaryWallet(login)));
         User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
+        List<NoExpensesWallet> wallets = new LinkedList<>(singletonList(WalletFactory.getSummaryWallet(user)));
         wallets.addAll(walletDao
                 .getAllFromUser(user)
                 .stream()

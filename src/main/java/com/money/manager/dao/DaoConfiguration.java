@@ -18,6 +18,6 @@ public class DaoConfiguration {
 
     @Bean
     public ExpenseDao expenseDao() {
-        return new HibernateExpenseDao();
+        return new HibernateExpenseDao(budgetDao());
     }
 }
