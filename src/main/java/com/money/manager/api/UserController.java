@@ -5,7 +5,7 @@ import com.money.manager.dao.ExpenseDao;
 import com.money.manager.dao.UserDao;
 import com.money.manager.dao.WalletDao;
 import com.money.manager.dto.NoExpensesWallet;
-import com.money.manager.dto.NoPasswordUser;
+import com.money.manager.dto.UserDto;
 import com.money.manager.dto.Summary;
 import com.money.manager.dto.TimePeriod;
 import com.money.manager.exception.UserNotFoundException;
@@ -38,7 +38,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.money.manager.factory.WalletFactory.getWalletEntityFromNoExpensesWallet;
@@ -64,11 +63,11 @@ public class UserController {
     }
 
     @GetMapping(produces = APPLICATION_JSON_VALUE)
-    public List<NoPasswordUser> getUsers() throws CustomException {
+    public List<UserDto> getUsers() throws CustomException {
         return userDao
                 .findAll()
                 .stream()
-                .map(UserFactory::getNoPasswordUserFromUserEntity)
+                .map(UserDto::fromUser)
                 .collect(Collectors.toList());
     }
 

@@ -1,6 +1,6 @@
 package com.money.manager.service.servlet;
 
-import com.money.manager.dto.NoPasswordUser;
+import com.money.manager.dto.UserDto;
 import com.money.manager.model.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +12,6 @@ import javax.servlet.http.HttpSession;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static com.money.manager.factory.UserFactory.getNoPasswordUserFromUserEntity;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 
@@ -34,8 +33,7 @@ public class LoggedInServlet {
                 request,
                 httpSession -> {
                     User user = (User) httpSession.getAttribute("user");
-                    NoPasswordUser noPasswordUser =
-                            getNoPasswordUserFromUserEntity(user);
+                    UserDto userDto = UserDto.fromUser(user);
                     return ResponseEntity.ok().build();
                 },
                 () -> ResponseEntity.status(401).build()
