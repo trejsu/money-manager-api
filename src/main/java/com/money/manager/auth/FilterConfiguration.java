@@ -1,9 +1,9 @@
-package com.money.manager.service.filter;
+package com.money.manager.auth;
 
 
-import com.money.manager.service.filter.security.AdminAccessFilter;
-import com.money.manager.service.filter.security.AuthenticationFilter;
-import com.money.manager.service.filter.security.ResourceAccessFilter;
+import com.money.manager.auth.authorization.AdminAccessFilter;
+import com.money.manager.auth.authorization.AuthenticationFilter;
+import com.money.manager.auth.authorization.ResourceAccessFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

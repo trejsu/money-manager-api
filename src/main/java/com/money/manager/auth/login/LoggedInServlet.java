@@ -1,4 +1,4 @@
-package com.money.manager.service.servlet;
+package com.money.manager.auth.login;
 
 import com.money.manager.dto.UserDto;
 import com.money.manager.model.User;

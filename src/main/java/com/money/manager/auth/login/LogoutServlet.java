@@ -1,4 +1,4 @@
-package com.money.manager.service.servlet;
+package com.money.manager.auth.login;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

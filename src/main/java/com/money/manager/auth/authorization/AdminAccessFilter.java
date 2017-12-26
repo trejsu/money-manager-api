@@ -1,4 +1,4 @@
-package com.money.manager.service.filter.security;
+package com.money.manager.auth.authorization;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;

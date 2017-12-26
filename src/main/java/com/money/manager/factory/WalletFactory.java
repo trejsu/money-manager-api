@@ -15,6 +15,7 @@ public class WalletFactory {
 
     private static final WalletDao walletDao = new HibernateWalletDao(new HibernateUserDao());
 
+    // todo: move to service
     public static WalletDto getSummaryWallet(User user) throws CustomException {
         BigDecimal amount = calculateAmount(user);
         return new WalletDto(

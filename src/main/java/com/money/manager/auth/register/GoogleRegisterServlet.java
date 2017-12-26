@@ -1,13 +1,13 @@
-package com.money.manager.service.servlet.register;
+package com.money.manager.auth.register;
 
-import com.money.manager.dto.RegistrantUser;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-
+@RestController
 @RequestMapping("/google_register")
 public class GoogleRegisterServlet extends RegisterServlet {
     @Override
-    protected void setup(RegistrantUser registrantUser) {
+    protected void setup(UserInputDto userInputDto) {
 
     }
 }

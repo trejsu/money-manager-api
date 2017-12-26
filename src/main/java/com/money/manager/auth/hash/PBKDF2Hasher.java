@@ -1,6 +1,7 @@
 package com.money.manager.auth.hash;
 
 import com.google.api.client.util.Base64;
+import lombok.SneakyThrows;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -16,13 +17,14 @@ public class PBKDF2Hasher implements Hasher {
     private static final int desiredKeyLen = 256;
 
     @Override
-    public char[] getSaltedHash(char[] password) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    @SneakyThrows
+    public char[] getSaltedHash(char[] password) {
         byte[] salt = SecureRandom.getInstance("SHA1PRNG").generateSeed(saltLen);
         return (Base64.encodeBase64String(salt) + "$" + hash(password, salt)).toCharArray();
     }
 
     @Override
-    public boolean check(char[] password, char[] stored) throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public boolean check(char[] password, char[] stored) {
         String[] saltAndPass = String.copyValueOf(stored).split("\\$");
         if (saltAndPass.length != 2) {
             throw new IllegalStateException(
@@ -32,7 +34,8 @@ public class PBKDF2Hasher implements Hasher {
         return hashOfInput.equals(saltAndPass[1]);
     }
 
-    private static String hash(char[] password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    @SneakyThrows
+    private static String hash(char[] password, byte[] salt) {
         if (password == null || password.length == 0) {
             throw new IllegalArgumentException("Empty passwords are not supported.");
         }

@@ -1,4 +1,4 @@
-package com.money.manager.dto;
+package com.money.manager.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

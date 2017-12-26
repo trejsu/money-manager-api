@@ -18,8 +18,11 @@ import com.money.manager.factory.WalletFactory;
 import com.money.manager.model.User;
 import com.money.manager.model.Wallet;
 import com.money.manager.util.SummaryCalculator;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -99,15 +102,15 @@ public class UserController {
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/summary", produces = APPLICATION_JSON_VALUE)
-    public Summary getThisMonthSummary(
+    public Summary getSummary(
             @PathVariable("login") String login,
             @PathVariable("id") Integer id,
             @RequestParam(name = "start", required = false) String start,
             @RequestParam(name = "end", required = false) String end
     ) throws CustomException {
-        final List<Expense> expensesByWalletAndTimePeriod = 
+        final List<Expense> expenses =
                 walletDao.getExpensesByWalletAndTimePeriod(login, id, new TimePeriod(start, end), null, null);
-        return SummaryCalculator.calculateSummary(expensesByWalletAndTimePeriod);
+        return SummaryCalculator.calculateSummary(expenses);
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/expenses", produces = APPLICATION_JSON_VALUE)
