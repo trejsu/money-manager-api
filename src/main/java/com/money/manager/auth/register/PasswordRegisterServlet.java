@@ -2,13 +2,9 @@ package com.money.manager.auth.register;
 
 import com.money.manager.auth.hash.Hasher;
 import com.money.manager.auth.hash.PBKDF2Hasher;
-import com.money.manager.dto.RegistrantUser;
 import lombok.SneakyThrows;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 
 @RestController
 @RequestMapping("/password_register")

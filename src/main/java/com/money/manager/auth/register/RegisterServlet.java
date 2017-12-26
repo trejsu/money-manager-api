@@ -2,7 +2,6 @@ package com.money.manager.auth.register;
 
 import com.money.manager.dao.HibernateUserDao;
 import com.money.manager.dao.UserDao;
-import com.money.manager.dto.RegistrantUser;
 import com.money.manager.exception.CustomException;
 import com.money.manager.exception.LoginAlreadyTakenException;
 import com.money.manager.model.User;
@@ -12,11 +11,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.LinkedList;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
