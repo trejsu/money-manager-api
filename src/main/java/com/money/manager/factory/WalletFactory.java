@@ -2,9 +2,8 @@ package com.money.manager.factory;
 
 import com.money.manager.dao.HibernateUserDao;
 import com.money.manager.dao.HibernateWalletDao;
-import com.money.manager.dao.UserDao;
 import com.money.manager.dao.WalletDao;
-import com.money.manager.dto.NoExpensesWallet;
+import com.money.manager.dto.WalletDto;
 import com.money.manager.model.User;
 import com.money.manager.model.Wallet;
 import com.money.manager.exception.CustomException;
@@ -16,9 +15,9 @@ public class WalletFactory {
 
     private static final WalletDao walletDao = new HibernateWalletDao(new HibernateUserDao());
 
-    public static NoExpensesWallet getSummaryWallet(User user) throws CustomException {
+    public static WalletDto getSummaryWallet(User user) throws CustomException {
         BigDecimal amount = calculateAmount(user);
-        return new NoExpensesWallet(
+        return new WalletDto(
                 0,
                 amount,
                 "wszystkie"
@@ -29,19 +28,11 @@ public class WalletFactory {
         return walletDao.getSummaryAmountForUser(user);
     }
 
-    public static NoExpensesWallet getNoExpensesWalletFromWalletEntity(Wallet wallet) {
-        return new NoExpensesWallet(
-                wallet.getId(),
-                wallet.getAmount(),
-                wallet.getName()
-        );
-    }
-
-    public static Wallet getWalletEntityFromNoExpensesWallet(NoExpensesWallet noExpensesWallet) {
+    public static Wallet getWalletEntityFromNoExpensesWallet(WalletDto walletDto) {
         return new Wallet(
-                noExpensesWallet.getId(),
-                noExpensesWallet.getAmount(),
-                noExpensesWallet.getName(),
+                walletDto.getId(),
+                walletDto.getAmount(),
+                walletDto.getName(),
                 new LinkedList<>()
         );
     }

@@ -4,13 +4,12 @@ import com.money.manager.dao.BudgetDao;
 import com.money.manager.dao.ExpenseDao;
 import com.money.manager.dao.UserDao;
 import com.money.manager.dao.WalletDao;
-import com.money.manager.dto.NoExpensesWallet;
+import com.money.manager.dto.WalletDto;
 import com.money.manager.dto.UserDto;
 import com.money.manager.dto.Summary;
 import com.money.manager.dto.TimePeriod;
 import com.money.manager.exception.UserNotFoundException;
 import com.money.manager.exception.WalletNotFoundException;
-import com.money.manager.factory.UserFactory;
 import com.money.manager.model.Budget;
 import com.money.manager.model.Category;
 import com.money.manager.model.Expense;
@@ -78,26 +77,26 @@ public class UserController {
 
     // todo: sorting
     @GetMapping(value = "/{login}/wallets", produces = APPLICATION_JSON_VALUE)
-    public List<NoExpensesWallet> getWallets(@PathVariable("login") String login) throws CustomException {
-        return getNoExpensesWallets(login);
+    public List<WalletDto> getWallets(@PathVariable("login") String login) throws CustomException {
+        return getWalletDtos(login);
     }
 
-    // todo: move it from here
-    private List<NoExpensesWallet> getNoExpensesWallets(String login) throws CustomException {
+    // todo: move it from here to service
+    private List<WalletDto> getWalletDtos(String login) throws CustomException {
         User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
-        List<NoExpensesWallet> wallets = new LinkedList<>(singletonList(WalletFactory.getSummaryWallet(user)));
+        List<WalletDto> wallets = new LinkedList<>(singletonList(WalletFactory.getSummaryWallet(user)));
         wallets.addAll(walletDao
                 .getAllFromUser(user)
                 .stream()
-                .map(WalletFactory::getNoExpensesWalletFromWalletEntity)
+                .map(WalletDto::fromWallet)
                 .collect(Collectors.toList()));
         return wallets;
     }
 
     @PostMapping(value = "/{login}/wallets", consumes = APPLICATION_JSON_VALUE)
-    public void createWallet(@PathVariable("login") String login, @RequestBody NoExpensesWallet noExpensesWallet) throws CustomException {
+    public void createWallet(@PathVariable("login") String login, @RequestBody WalletDto walletDto) throws CustomException {
         User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
-        walletDao.addToUser(getWalletEntityFromNoExpensesWallet(noExpensesWallet), user);
+        walletDao.addToUser(getWalletEntityFromNoExpensesWallet(walletDto), user);
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/summary", produces = APPLICATION_JSON_VALUE)
