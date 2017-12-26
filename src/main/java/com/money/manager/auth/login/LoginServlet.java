@@ -6,6 +6,7 @@ import com.money.manager.model.User;
 import com.money.manager.exception.CustomException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.NoSuchAlgorithmException;
@@ -17,7 +18,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public abstract class LoginServlet {
 
     @PostMapping(produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> login(AuthenticationData authenticationData, HttpServletRequest request) throws InvalidKeySpecException, NoSuchAlgorithmException, CustomException {
+    public ResponseEntity<Void> login(@RequestBody AuthenticationData authenticationData, HttpServletRequest request) throws InvalidKeySpecException, NoSuchAlgorithmException, CustomException {
         Authenticator authenticator = getAuthenticator(authenticationData);
         Optional<User> userOptional = authenticator.verify();
         if (userOptional.isPresent()) {

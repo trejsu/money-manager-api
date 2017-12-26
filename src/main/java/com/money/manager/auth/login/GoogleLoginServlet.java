@@ -4,7 +4,9 @@ import com.money.manager.auth.Authenticator;
 import com.money.manager.auth.GoogleAuthenticator;
 import com.money.manager.auth.AuthenticationData;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+@RestController
 @RequestMapping("/google_login")
 public class GoogleLoginServlet extends LoginServlet {
 

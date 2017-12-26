@@ -27,7 +27,7 @@ public abstract class AuthorizationFilter implements Filter {
         if (authorized(session, httpServletRequest)) {
             chain.doFilter(servletRequest, servletResponse);
         } else {
-            httpServletResponse.sendRedirect("/unauthorized");
+            httpServletResponse.setStatus(403);
         }
     }
 

@@ -37,8 +37,7 @@ public class AuthenticationFilter implements Filter {
     }
 
     private boolean authenticated(HttpSession session) {
-//        return session != null && session.getAttribute("user") != null;
-        return true;
+        return session != null && session.getAttribute("user") != null;
     }
 
     @Override
