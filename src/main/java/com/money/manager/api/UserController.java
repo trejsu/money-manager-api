@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.money.manager.factory.WalletFactory.getWalletEntityFromNoExpensesWallet;
 import static java.util.Collections.singletonList;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -96,7 +95,7 @@ public class UserController {
     @PostMapping(value = "/{login}/wallets", consumes = APPLICATION_JSON_VALUE)
     public void createWallet(@PathVariable("login") String login, @RequestBody WalletDto walletDto) throws CustomException {
         User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
-        walletDao.addToUser(getWalletEntityFromNoExpensesWallet(walletDto), user);
+        walletDao.addToUser(walletDto.toWallet(), user);
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/summary", produces = APPLICATION_JSON_VALUE)

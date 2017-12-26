@@ -27,13 +27,4 @@ public class WalletFactory {
     private static BigDecimal calculateAmount(User user) throws CustomException {
         return walletDao.getSummaryAmountForUser(user);
     }
-
-    public static Wallet getWalletEntityFromNoExpensesWallet(WalletDto walletDto) {
-        return new Wallet(
-                walletDto.getId(),
-                walletDto.getAmount(),
-                walletDto.getName(),
-                new LinkedList<>()
-        );
-    }
 }

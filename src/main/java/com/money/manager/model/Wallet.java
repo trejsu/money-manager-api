@@ -1,6 +1,6 @@
 package com.money.manager.model;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,15 +12,17 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.math.BigDecimal;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import static javax.persistence.FetchType.EAGER;
 import static javax.persistence.GenerationType.IDENTITY;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
 @Entity
 @Table(name = "WALLET")
 public class Wallet {
@@ -38,4 +40,12 @@ public class Wallet {
     @Column(name = "expenses")
     @ElementCollection(fetch = EAGER)
     private List<Expense> expenses;
+
+    @Builder
+    public Wallet(Integer id, BigDecimal amount, String name, List<Expense> expenses) {
+        this.id = id;
+        this.amount = amount;
+        this.name = name;
+        this.expenses = Optional.ofNullable(expenses).orElse(new LinkedList<>());
+    }
 }
