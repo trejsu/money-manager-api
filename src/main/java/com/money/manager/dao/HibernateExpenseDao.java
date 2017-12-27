@@ -22,12 +22,6 @@ public class HibernateExpenseDao implements ExpenseDao {
 
     private final static DateTimeFormatter DATE_TIME_FORMATTER = ISO_LOCAL_DATE;
 
-    private final BudgetDao budgetDao;
-
-    public HibernateExpenseDao(BudgetDao budgetDao) {
-        this.budgetDao = budgetDao;
-    }
-
     @Override
     public BigDecimal getSummaryByUserTimePeriodAndCategory(String login, TimePeriod timePeriod, Category category) throws CustomException {
         BigDecimal sum = executeQuery(session -> {
@@ -60,13 +54,12 @@ public class HibernateExpenseDao implements ExpenseDao {
     public void addToUserAndWallet(User user, Wallet wallet, Expense expense) throws CustomException {
         executeQuery(session -> {
             expense.setDate(getToday());
-            // todo: fix atomicity
-//            expenseDao.add(expense);
+            session.save(expense);
             wallet.getExpenses().add(expense);
             updateAmount(wallet, expense);
-            return session.save(wallet);
+            session.update(wallet);
+            return null;
         });
-        updateBudgets(user, expense);
     }
 
     private String getToday() {
@@ -80,16 +73,4 @@ public class HibernateExpenseDao implements ExpenseDao {
         }
         wallet.setAmount(wallet.getAmount().add(amount));
     }
-
-    private void updateBudgets(User user, Expense expense) throws CustomException {
-        List<Budget> budgets = budgetDao.getFromUserAndTimePeriod(user, new TimePeriod(null, getToday()), new TimePeriod(getToday(), null));
-        for (Budget budget : budgets) {
-            if (budget.getCategory().getName().equals(expense.getCategory().getName())) {
-                budget.setCurrent(budget.getCurrent().add(expense.getAmount()));
-                budgetDao.update(budget);
-            }
-        }
-    }
-
-
 }

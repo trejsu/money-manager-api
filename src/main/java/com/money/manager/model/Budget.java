@@ -43,9 +43,6 @@ public class Budget {
     @Column(name = "total")
     private BigDecimal total;
 
-    @Column(name = "current")
-    private BigDecimal current;
-
     @Column(name = "start_date")
     private String start;
 

@@ -4,6 +4,7 @@ import com.money.manager.dao.BudgetDao;
 import com.money.manager.dao.ExpenseDao;
 import com.money.manager.dao.UserDao;
 import com.money.manager.dao.WalletDao;
+import com.money.manager.dto.ExpenseDto;
 import com.money.manager.dto.WalletDto;
 import com.money.manager.dto.UserDto;
 import com.money.manager.dto.Summary;
@@ -19,10 +20,10 @@ import com.money.manager.model.User;
 import com.money.manager.model.Wallet;
 import com.money.manager.util.SummaryCalculator;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,9 +41,9 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 
@@ -69,7 +70,7 @@ public class UserController {
                 .findAll()
                 .stream()
                 .map(UserDto::fromUser)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     @PutMapping(value = "/{login}", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -77,21 +78,16 @@ public class UserController {
         userDao.updateField(login, field, value.get(field));
     }
 
-    // todo: sorting
     @GetMapping(value = "/{login}/wallets", produces = APPLICATION_JSON_VALUE)
     public List<WalletDto> getWallets(@PathVariable("login") String login) throws CustomException {
-        return getWalletDtos(login);
-    }
-
-    // todo: move it from here to service
-    private List<WalletDto> getWalletDtos(String login) throws CustomException {
+        // todo: move it from here to service
         User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
         List<WalletDto> wallets = new LinkedList<>(singletonList(WalletFactory.getSummaryWallet(user)));
         wallets.addAll(walletDao
                 .getAllFromUser(user)
                 .stream()
                 .map(WalletDto::fromWallet)
-                .collect(Collectors.toList()));
+                .collect(toList()));
         return wallets;
     }
 
@@ -140,8 +136,9 @@ public class UserController {
     public void createExpense(
             @PathVariable("login") String login,
             @PathVariable("id") Integer id,
-            @RequestBody Expense expense
+            @RequestBody ExpenseDto expense
     ) throws CustomException {
+        // todo: move to service
         User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
         Wallet wallet = user
                 .getWallets()
@@ -149,7 +146,7 @@ public class UserController {
                 .filter(w -> w.getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new WalletNotFoundException(""));
-        expenseDao.addToUserAndWallet(user, wallet, expense);
+        expenseDao.addToUserAndWallet(user, wallet, expense.toExpense());
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/counted_categories", produces = APPLICATION_JSON_VALUE)
@@ -164,7 +161,7 @@ public class UserController {
     }
 
     @GetMapping(value = "/{login}/budgets", produces = APPLICATION_JSON_VALUE)
-    public List<Budget> getBudgets(
+    public List<BudgetOutputDto> getBudgets(
             @PathVariable("login") String login,
             @RequestParam(name = "start_min", required = false) String startMin,
             @RequestParam(name = "start_max", required = false) String startMax,
@@ -172,21 +169,26 @@ public class UserController {
             @RequestParam(name = "end_max", required = false) String endMax
     ) throws CustomException {
         User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
-        return budgetDao.getFromUserAndTimePeriod(user, new TimePeriod(startMin, startMax), new TimePeriod(endMin, endMax));
+        final List<Budget> budgets = budgetDao.getFromUserAndTimePeriod(user, new TimePeriod(startMin, startMax), new TimePeriod(endMin, endMax));
+        return budgets
+                .stream()
+                .map(budget -> BudgetOutputDto.fromBudget(budget, calculateCurrent(login, budget)))
+                .collect(toList());
     }
 
 
     @PostMapping(value = "/{login}/budgets", consumes = APPLICATION_JSON_VALUE)
     public void createBudget(@PathVariable("login") String login, @Valid @RequestBody BudgetInputDto budget) throws CustomException {
         User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
-        budgetDao.addToUser(budget.toBudget(calculateCurrent(login, budget)), user);
+        budgetDao.addToUser(budget.toBudget(), user);
     }
 
     // todo: move to service
-    private BigDecimal calculateCurrent(String login, BudgetInputDto budget) throws CustomException {
+    @SneakyThrows
+    private BigDecimal calculateCurrent(String login, Budget budget) {
         return expenseDao.getSummaryByUserTimePeriodAndCategory(
                 login,
-                budget.getTimePeriod(),
+                new TimePeriod(budget.getStart(), budget.getEnd()),
                 budget.getCategory()
         );
     }
@@ -202,13 +204,32 @@ public class UserController {
         @NotNull
         private TimePeriod timePeriod;
 
-        public Budget toBudget(BigDecimal current) {
+        public Budget toBudget() {
             return Budget.builder()
                     .category(category)
                     .total(total)
                     .start(timePeriod.getStart())
                     .end(timePeriod.getEnd())
+                    .build();
+        }
+    }
+
+    @Data
+    @NoArgsConstructor
+    @Builder
+    @AllArgsConstructor
+    static class BudgetOutputDto {
+        private Category category;
+        private BigDecimal total;
+        private BigDecimal current;
+        private TimePeriod timePeriod;
+
+        public static BudgetOutputDto fromBudget(Budget budget, BigDecimal current) {
+            return builder()
+                    .category(budget.getCategory())
+                    .total(budget.getTotal())
                     .current(current)
+                    .timePeriod(new TimePeriod(budget.getStart(), budget.getEnd()))
                     .build();
         }
     }
