@@ -6,10 +6,8 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.money.manager.dao.HibernateUserDao;
-import com.money.manager.dao.UserDao;
+import com.money.manager.db.dao.UserDao;
 import com.money.manager.model.User;
-import com.money.manager.exception.CustomException;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -22,20 +20,21 @@ public class GoogleAuthenticator implements Authenticator {
     private static final JacksonFactory jacksonFactory = new JacksonFactory();
     private static final HttpTransport httpTransport = new NetHttpTransport();
 
-    private static final UserDao userDao = new HibernateUserDao();
+    private final UserDao userDao;
 
     private final String token;
     private final GoogleIdTokenVerifier verifier;
 
-    public GoogleAuthenticator(String token) {
+    public GoogleAuthenticator(String token, UserDao userDao) {
         this.token = token;
+        this.userDao = userDao;
         this.verifier = new GoogleIdTokenVerifier
                 .Builder(httpTransport, jacksonFactory)
                 .setAudience(Collections.singletonList(CLIENT_ID))
                 .build();
     }
 
-    public Optional<User> verify() throws CustomException {
+    public Optional<User> verify() {
         GoogleIdToken verifiedToken = getVerifiedToken();
         if (verifiedToken == null) {
             return Optional.empty();

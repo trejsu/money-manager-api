@@ -18,7 +18,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public abstract class LoginServlet {
 
     @PostMapping(produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> login(@RequestBody AuthenticationData authenticationData, HttpServletRequest request) throws InvalidKeySpecException, NoSuchAlgorithmException, CustomException {
+    public ResponseEntity<Void> login(@RequestBody AuthenticationData authenticationData, HttpServletRequest request) throws InvalidKeySpecException, NoSuchAlgorithmException {
         Authenticator authenticator = getAuthenticator(authenticationData);
         Optional<User> userOptional = authenticator.verify();
         if (userOptional.isPresent()) {

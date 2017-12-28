@@ -1,30 +1,35 @@
-package com.money.manager.dao;
+package com.money.manager.db.dao;
 
+import com.money.manager.db.PostgresUtil;
 import com.money.manager.dto.TimePeriod;
-import com.money.manager.model.Budget;
 import com.money.manager.model.Category;
 import com.money.manager.model.Expense;
-import com.money.manager.exception.CustomException;
 import com.money.manager.model.User;
 import com.money.manager.model.Wallet;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
-import static com.money.manager.util.HibernateUtil.executeQuery;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 
 @Service
-public class HibernateExpenseDao implements ExpenseDao {
+public class PostgresExpenseDao implements ExpenseDao {
 
     private final static DateTimeFormatter DATE_TIME_FORMATTER = ISO_LOCAL_DATE;
 
+    private final PostgresUtil postgres;
+
+    @Autowired
+    public PostgresExpenseDao(PostgresUtil postgres) {
+        this.postgres = postgres;
+    }
+
     @Override
-    public BigDecimal getSummaryByUserTimePeriodAndCategory(String login, TimePeriod timePeriod, Category category) throws CustomException {
-        BigDecimal sum = executeQuery(session -> {
+    public BigDecimal getSummaryByUserTimePeriodAndCategory(String login, TimePeriod timePeriod, Category category) {
+        BigDecimal sum = postgres.executeQuery(session -> {
             String query =
                     "SELECT sum(e.amount) FROM User u " +
                     "JOIN u.wallets w " +
@@ -51,8 +56,8 @@ public class HibernateExpenseDao implements ExpenseDao {
     }
 
     @Override
-    public void addToUserAndWallet(User user, Wallet wallet, Expense expense) throws CustomException {
-        executeQuery(session -> {
+    public void addToUserAndWallet(User user, Wallet wallet, Expense expense) {
+        postgres.executeQuery(session -> {
             expense.setDate(getToday());
             session.save(expense);
             wallet.getExpenses().add(expense);

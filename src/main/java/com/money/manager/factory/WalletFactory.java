@@ -1,22 +1,25 @@
 package com.money.manager.factory;
 
-import com.money.manager.dao.HibernateUserDao;
-import com.money.manager.dao.HibernateWalletDao;
-import com.money.manager.dao.WalletDao;
+import com.money.manager.db.dao.WalletDao;
 import com.money.manager.dto.WalletDto;
 import com.money.manager.model.User;
-import com.money.manager.model.Wallet;
-import com.money.manager.exception.CustomException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.LinkedList;
 
+@Service
 public class WalletFactory {
 
-    private static final WalletDao walletDao = new HibernateWalletDao(new HibernateUserDao());
+    private final WalletDao walletDao;
+
+    @Autowired
+    public WalletFactory(WalletDao walletDao) {
+        this.walletDao = walletDao;
+    }
 
     // todo: move to service
-    public static WalletDto getSummaryWallet(User user) throws CustomException {
+    public WalletDto getSummaryWallet(User user) {
         BigDecimal amount = calculateAmount(user);
         return new WalletDto(
                 0,
@@ -25,7 +28,7 @@ public class WalletFactory {
         );
     }
 
-    private static BigDecimal calculateAmount(User user) throws CustomException {
+    private BigDecimal calculateAmount(User user) {
         return walletDao.getSummaryAmountForUser(user);
     }
 }

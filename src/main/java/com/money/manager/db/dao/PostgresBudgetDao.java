@@ -1,30 +1,30 @@
-package com.money.manager.dao;
+package com.money.manager.db.dao;
 
+import com.money.manager.db.PostgresUtil;
 import com.money.manager.dto.TimePeriod;
 import com.money.manager.model.Budget;
 import com.money.manager.model.User;
-import com.money.manager.exception.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
-import static com.money.manager.util.HibernateUtil.executeQuery;
 
 @Service
-public class HibernateBudgetDao implements BudgetDao {
+public class PostgresBudgetDao implements BudgetDao {
 
     private final UserDao userDao;
+    private final PostgresUtil postgres;
 
     @Autowired
-    public HibernateBudgetDao(UserDao userDao) {
+    public PostgresBudgetDao(UserDao userDao, PostgresUtil postgres) {
         this.userDao = userDao;
+        this.postgres = postgres;
     }
 
     @Override
-    public void addToUser(Budget newInstance, User user) throws CustomException {
-        executeQuery(session -> {
+    public void addToUser(Budget newInstance, User user) {
+        postgres.executeQuery(session -> {
             user.getBudgets().add(newInstance);
             userDao.update(user);
             return user;
@@ -32,16 +32,16 @@ public class HibernateBudgetDao implements BudgetDao {
     }
 
     @Override
-    public void update(Budget transientObject) throws CustomException {
-        executeQuery(session -> {
+    public void update(Budget transientObject) {
+        postgres.executeQuery(session -> {
             session.update(transientObject);
             return transientObject;
         });
     }
 
     @Override
-    public List<Budget> getFromUserAndTimePeriod(User user, TimePeriod start, TimePeriod end) throws CustomException {
-        return executeQuery(session -> {
+    public List<Budget> getFromUserAndTimePeriod(User user, TimePeriod start, TimePeriod end) {
+        return postgres.executeQuery(session -> {
             String query =
                     "SELECT b FROM User u " +
                             "JOIN u.budgets b " +

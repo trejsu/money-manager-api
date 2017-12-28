@@ -1,32 +1,37 @@
-package com.money.manager.dao;
+package com.money.manager.db.dao;
 
-import com.money.manager.dto.TimePeriod;
-import com.money.manager.model.Budget;
+import com.money.manager.db.PostgresUtil;
 import com.money.manager.model.User;
-import com.money.manager.model.Wallet;
 import com.money.manager.exception.BadRequestException;
 import com.money.manager.exception.CustomException;
 import com.money.manager.exception.LoginAlreadyTakenException;
 import com.money.manager.exception.UserNotFoundException;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import static com.money.manager.util.HibernateUtil.executeQuery;
-import static java.util.Comparator.comparingInt;
 
-public class HibernateUserDao implements UserDao {
+@Service
+public class PostgresUserDao implements UserDao {
 
-    @Override
-    public String add(User newInstance) throws CustomException {
-        checkLoginAvailability(newInstance);
-        return executeQuery(session -> (String) session.save(newInstance));
+    private final PostgresUtil postgres;
+
+    @Autowired
+    public PostgresUserDao(PostgresUtil postgres) {
+        this.postgres = postgres;
     }
 
-    private void checkLoginAvailability(User newInstance) throws CustomException {
+    @Override
+    public String add(User newInstance) {
+        checkLoginAvailability(newInstance);
+        return postgres.executeQuery(session -> (String) session.save(newInstance));
+    }
+
+    private void checkLoginAvailability(User newInstance) {
         String login = newInstance.getLogin();
         if (get(login).isPresent()) {
             throw new LoginAlreadyTakenException(
@@ -35,23 +40,23 @@ public class HibernateUserDao implements UserDao {
     }
 
     @Override
-    public Optional<User> get(String id) throws CustomException {
-        return Optional.ofNullable(executeQuery(
+    public Optional<User> get(String id) {
+        return Optional.ofNullable(postgres.executeQuery(
                 session -> session.get(User.class, id)
         ));
     }
 
     @Override
-    public void update(User transientObject) throws CustomException {
-        executeQuery(session -> {
+    public void update(User transientObject) {
+        postgres.executeQuery(session -> {
             session.update(transientObject);
             return transientObject;
         });
     }
 
     @Override
-    public List<User> findAll() throws CustomException {
-        return executeQuery(session -> session
+    public List<User> findAll() {
+        return postgres.executeQuery(session -> session
                 .createQuery("FROM User", User.class)
                 .list());
     }

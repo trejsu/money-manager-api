@@ -1,9 +1,9 @@
 package com.money.manager.api;
 
-import com.money.manager.dao.BudgetDao;
-import com.money.manager.dao.ExpenseDao;
-import com.money.manager.dao.UserDao;
-import com.money.manager.dao.WalletDao;
+import com.money.manager.db.dao.BudgetDao;
+import com.money.manager.db.dao.ExpenseDao;
+import com.money.manager.db.dao.UserDao;
+import com.money.manager.db.dao.WalletDao;
 import com.money.manager.dto.ExpenseDto;
 import com.money.manager.dto.WalletDto;
 import com.money.manager.dto.UserDto;
@@ -55,17 +55,19 @@ public class UserController {
     private final WalletDao walletDao;
     private final BudgetDao budgetDao;
     private final ExpenseDao expenseDao;
+    private final WalletFactory walletFactory;
 
     @Autowired
-    public UserController(UserDao userDao, WalletDao walletDao, BudgetDao budgetDao, ExpenseDao expenseDao) {
+    public UserController(UserDao userDao, WalletDao walletDao, BudgetDao budgetDao, ExpenseDao expenseDao, WalletFactory walletFactory) {
         this.userDao = userDao;
         this.walletDao = walletDao;
         this.budgetDao = budgetDao;
         this.expenseDao = expenseDao;
+        this.walletFactory = walletFactory;
     }
 
     @GetMapping(produces = APPLICATION_JSON_VALUE)
-    public List<UserDto> getUsers() throws CustomException {
+    public List<UserDto> getUsers() {
         return userDao
                 .findAll()
                 .stream()
@@ -74,15 +76,15 @@ public class UserController {
     }
 
     @PutMapping(value = "/{login}", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    public <T> void updateUser(@PathVariable("login") String login, @RequestParam("field") String field, @RequestBody LinkedHashMap<String, T> value) throws CustomException {
+    public <T> void updateUser(@PathVariable("login") String login, @RequestParam("field") String field, @RequestBody LinkedHashMap<String, T> value) {
         userDao.updateField(login, field, value.get(field));
     }
 
     @GetMapping(value = "/{login}/wallets", produces = APPLICATION_JSON_VALUE)
-    public List<WalletDto> getWallets(@PathVariable("login") String login) throws CustomException {
+    public List<WalletDto> getWallets(@PathVariable("login") String login) {
         // todo: move it from here to service
         User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
-        List<WalletDto> wallets = new LinkedList<>(singletonList(WalletFactory.getSummaryWallet(user)));
+        List<WalletDto> wallets = new LinkedList<>(singletonList(walletFactory.getSummaryWallet(user)));
         wallets.addAll(walletDao
                 .getAllFromUser(user)
                 .stream()
@@ -92,52 +94,44 @@ public class UserController {
     }
 
     @PostMapping(value = "/{login}/wallets", consumes = APPLICATION_JSON_VALUE)
-    public void createWallet(@PathVariable("login") String login, @RequestBody WalletDto walletDto) throws CustomException {
+    public void createWallet(@PathVariable("login") String login, @RequestBody WalletDto walletDto) {
         User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
         walletDao.addToUser(walletDto.toWallet(), user);
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/summary", produces = APPLICATION_JSON_VALUE)
-    public Summary getSummary(
-            @PathVariable("login") String login,
-            @PathVariable("id") Integer id,
-            @RequestParam(name = "start", required = false) String start,
-            @RequestParam(name = "end", required = false) String end
-    ) throws CustomException {
+    public Summary getSummary(@PathVariable("login") String login,
+                              @PathVariable("id") Integer id,
+                              @RequestParam(name = "start", required = false) String start,
+                              @RequestParam(name = "end", required = false) String end) {
         final List<Expense> expenses =
                 walletDao.getExpensesByWalletAndTimePeriod(login, id, new TimePeriod(start, end), null, null);
         return SummaryCalculator.calculateSummary(expenses);
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/expenses", produces = APPLICATION_JSON_VALUE)
-    public List<Expense> getExpenses(
-            @PathVariable("login") String login,
-            @PathVariable("id") Integer id,
-            @RequestParam(name = "start", required = false) String start,
-            @RequestParam(name = "end", required = false) String end,
-            @RequestParam(name = "limit", required = false) Integer limit,
-            @RequestParam(name = "sort", required = false) String sort
-    ) throws CustomException {
+    public List<Expense> getExpenses(@PathVariable("login") String login,
+                                     @PathVariable("id") Integer id,
+                                     @RequestParam(name = "start", required = false) String start,
+                                     @RequestParam(name = "end", required = false) String end,
+                                     @RequestParam(name = "limit", required = false) Integer limit,
+                                     @RequestParam(name = "sort", required = false) String sort) {
         return walletDao.getExpensesByWalletAndTimePeriod(login, id, new TimePeriod(start, end), limit, sort);
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/highest_expense", produces = APPLICATION_JSON_VALUE)
-    public Expense getHighestExpense(
-            @PathVariable("login") String login,
-            @PathVariable("id") Integer id,
-            @RequestParam(name = "start", required = false) String start,
-            @RequestParam(name = "end", required = false) String end
-    ) throws CustomException {
+    public Expense getHighestExpense(@PathVariable("login") String login,
+                                     @PathVariable("id") Integer id,
+                                     @RequestParam(name = "start", required = false) String start,
+                                     @RequestParam(name = "end", required = false) String end) {
             TimePeriod timePeriod = new TimePeriod(start, end);
             return walletDao.getHighestExpenseByWalletAndTimePeriod(login, id, timePeriod);
     }
 
     @PostMapping(value = "/{login}/wallets/{id}/expenses", consumes = APPLICATION_JSON_VALUE)
-    public void createExpense(
-            @PathVariable("login") String login,
-            @PathVariable("id") Integer id,
-            @RequestBody ExpenseDto expense
-    ) throws CustomException {
+    public void createExpense(@PathVariable("login") String login,
+                              @PathVariable("id") Integer id,
+                              @RequestBody ExpenseDto expense) {
         // todo: move to service
         User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
         Wallet wallet = user
@@ -150,24 +144,20 @@ public class UserController {
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/counted_categories", produces = APPLICATION_JSON_VALUE)
-    public Map<String, BigDecimal> getCountedCategories(
-            @PathVariable("login") String login,
-            @PathVariable("id") Integer id,
-            @RequestParam(name = "start", required = false) String start,
-            @RequestParam(name = "end", required = false) String end
-    ) throws CustomException {
+    public Map<String, BigDecimal> getCountedCategories(@PathVariable("login") String login,
+                                                        @PathVariable("id") Integer id,
+                                                        @RequestParam(name = "start", required = false) String start,
+                                                        @RequestParam(name = "end", required = false) String end) {
             TimePeriod timePeriod = new TimePeriod(start, end);
             return walletDao.getCountedCategoriesByWalletAndTimePeriod(login, id, timePeriod);
     }
 
     @GetMapping(value = "/{login}/budgets", produces = APPLICATION_JSON_VALUE)
-    public List<BudgetOutputDto> getBudgets(
-            @PathVariable("login") String login,
-            @RequestParam(name = "start_min", required = false) String startMin,
-            @RequestParam(name = "start_max", required = false) String startMax,
-            @RequestParam(name = "end_min", required = false) String endMin,
-            @RequestParam(name = "end_max", required = false) String endMax
-    ) throws CustomException {
+    public List<BudgetOutputDto> getBudgets(@PathVariable("login") String login,
+                                            @RequestParam(name = "start_min", required = false) String startMin,
+                                            @RequestParam(name = "start_max", required = false) String startMax,
+                                            @RequestParam(name = "end_min", required = false) String endMin,
+                                            @RequestParam(name = "end_max", required = false) String endMax) {
         User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
         final List<Budget> budgets = budgetDao.getFromUserAndTimePeriod(user, new TimePeriod(startMin, startMax), new TimePeriod(endMin, endMax));
         return budgets
@@ -178,7 +168,7 @@ public class UserController {
 
 
     @PostMapping(value = "/{login}/budgets", consumes = APPLICATION_JSON_VALUE)
-    public void createBudget(@PathVariable("login") String login, @Valid @RequestBody BudgetInputDto budget) throws CustomException {
+    public void createBudget(@PathVariable("login") String login, @Valid @RequestBody BudgetInputDto budget) {
         User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
         budgetDao.addToUser(budget.toBudget(), user);
     }

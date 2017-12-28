@@ -1,7 +1,7 @@
-package com.money.manager.dao;
+package com.money.manager.db.dao;
 
+import com.money.manager.db.PostgresUtil;
 import com.money.manager.dto.TimePeriod;
-import com.money.manager.model.Budget;
 import com.money.manager.model.Expense;
 import com.money.manager.model.User;
 import com.money.manager.model.Wallet;
@@ -12,41 +12,34 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.NoResultException;
 import java.math.BigDecimal;
-import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.money.manager.util.HibernateUtil.executeQuery;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.util.Comparator.comparingInt;
 
 @Service
-public class HibernateWalletDao implements WalletDao {
+public class PostgresWalletDao implements WalletDao {
 
     private final static int ID_OF_SUMMARY_WALLET = 0;
 
     private final UserDao userDao;
+    private final PostgresUtil postgres;
 
     @Autowired
-    public HibernateWalletDao(UserDao userDao) {
+    public PostgresWalletDao(UserDao userDao, PostgresUtil postgres) {
         this.userDao = userDao;
+        this.postgres = postgres;
     }
 
     // todo: it fits more to expenses dao
     // todo: user not found
     // todo: wallet not found
     @Override
-    public List<Expense> getExpensesByWalletAndTimePeriod(
-            String login,
-            Integer id,
-            TimePeriod timePeriod,
-            Integer limit,
-            String sort
-    ) throws CustomException {
-        return executeQuery(session -> {
+    public List<Expense> getExpensesByWalletAndTimePeriod(String login, Integer id, TimePeriod timePeriod, Integer limit, String sort) {
+        return postgres.executeQuery(session -> {
             String query =
                     "SELECT e FROM User u " +
                     "JOIN u.wallets w " +
@@ -66,8 +59,8 @@ public class HibernateWalletDao implements WalletDao {
     }
 
     @Override
-    public Expense getHighestExpenseByWalletAndTimePeriod(String login, Integer id, TimePeriod timePeriod) throws CustomException {
-        return executeQuery(session -> {
+    public Expense getHighestExpenseByWalletAndTimePeriod(String login, Integer id, TimePeriod timePeriod) {
+        return postgres.executeQuery(session -> {
             String query =
                     "SELECT e FROM User u " +
                             "JOIN u.wallets w " +
@@ -93,8 +86,8 @@ public class HibernateWalletDao implements WalletDao {
     }
 
     @Override
-    public Map<String, BigDecimal> getCountedCategoriesByWalletAndTimePeriod(String login, Integer id, TimePeriod timePeriod) throws CustomException {
-        return executeQuery(session -> {
+    public Map<String, BigDecimal> getCountedCategoriesByWalletAndTimePeriod(String login, Integer id, TimePeriod timePeriod) {
+        return postgres.executeQuery(session -> {
             String queryString =
                 "SELECT c.name, sum(e.amount) FROM User u " +
                 "JOIN u.wallets w " +
@@ -149,8 +142,8 @@ public class HibernateWalletDao implements WalletDao {
     }
 
     @Override
-    public void addToUser(Wallet newInstance, User user) throws CustomException {
-        executeQuery(session -> {
+    public void addToUser(Wallet newInstance, User user) {
+        postgres.executeQuery(session -> {
             user.getWallets().add(newInstance);
             userDao.update(user);
             return user;
@@ -165,8 +158,8 @@ public class HibernateWalletDao implements WalletDao {
     }
 
     @Override
-    public BigDecimal getSummaryAmountForUser(User user) throws CustomException {
-        BigDecimal sum = executeQuery(session -> {
+    public BigDecimal getSummaryAmountForUser(User user) {
+        BigDecimal sum = postgres.executeQuery(session -> {
             String query =
                     "SELECT sum(w.amount) FROM User u " +
                             "JOIN u.wallets w " +
