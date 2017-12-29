@@ -23,7 +23,9 @@ public abstract class AuthorizationFilter implements Filter {
         HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
         HttpSession session = httpServletRequest.getSession(false);
 
-        if (authorized(session, httpServletRequest)) {
+        String method = httpServletRequest.getMethod();
+
+        if (method.equalsIgnoreCase("OPTIONS") || authorized(session, httpServletRequest)) {
             chain.doFilter(servletRequest, servletResponse);
         } else {
             httpServletResponse.setStatus(403);

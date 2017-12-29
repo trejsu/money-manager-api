@@ -14,10 +14,6 @@ public class ResourceAccessFilter extends AuthorizationFilter {
         if (user.isAdmin()) {
             return true;
         }
-        final String pathInfo = httpServletRequest.getServletPath();
-//        if (pathInfo.length() < 4) {
-//            return true;
-//        }
         String requestedResourceOwner = httpServletRequest.getServletPath().split("/")[3];
         return Objects.equals(user.getLogin(), requestedResourceOwner);
     }

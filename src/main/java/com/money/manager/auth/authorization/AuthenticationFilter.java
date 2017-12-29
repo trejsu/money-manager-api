@@ -26,17 +26,19 @@ public class AuthenticationFilter implements Filter {
     ) throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
         HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
-        HttpSession session = httpServletRequest.getSession(false);
 
-        if (authenticated(session)) {
+        if (authenticated(httpServletRequest)) {
             chain.doFilter(servletRequest, servletResponse);
         } else {
             httpServletResponse.sendError(401);
         }
     }
 
-    private boolean authenticated(HttpSession session) {
-        return session != null && session.getAttribute("user") != null;
+    private boolean authenticated(HttpServletRequest httpServletRequest) {
+        HttpSession session = httpServletRequest.getSession(false);
+        String method = httpServletRequest.getMethod();
+        return method.equalsIgnoreCase("OPTIONS") ||
+                (session != null && session.getAttribute("user") != null);
     }
 
     @Override
