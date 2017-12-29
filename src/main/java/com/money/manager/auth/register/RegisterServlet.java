@@ -6,32 +6,27 @@ import com.money.manager.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.net.URI;
+
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-@Service
 public abstract class RegisterServlet {
 
+    @Autowired
     private UserDao userDao;
 
-    @Autowired
-    public RegisterServlet(UserDao userDao) {
-        this.userDao = userDao;
-    }
-
-    public RegisterServlet() {
-    }
-
+    @SneakyThrows
     @PostMapping(consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> register(@RequestBody UserInputDto userInputDto) {
         try {
             userDao.add(initialize(userInputDto));
-            return ResponseEntity.ok().build();
+            return ResponseEntity.created(new URI("/uri_to_change")).build();
         } catch (LoginAlreadyTakenException e) {
             return ResponseEntity.ok().build();
         }
