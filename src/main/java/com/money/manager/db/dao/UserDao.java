@@ -13,6 +13,4 @@ public interface UserDao {
     void update(User transientObject);
 
     List<User> findAll();
-
-    <T> void updateField(String login, String field, T value);
 }

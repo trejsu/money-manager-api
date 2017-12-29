@@ -1,9 +1,6 @@
 package com.money.manager.api;
 
-import com.money.manager.db.dao.BudgetDao;
-import com.money.manager.db.dao.ExpenseDao;
-import com.money.manager.db.dao.UserDao;
-import com.money.manager.db.dao.WalletDao;
+import com.money.manager.dto.BudgetOutputDto;
 import com.money.manager.dto.ExpenseDto;
 import com.money.manager.dto.WalletDto;
 import com.money.manager.dto.UserDto;
@@ -14,11 +11,9 @@ import com.money.manager.exception.WalletNotFoundException;
 import com.money.manager.model.Budget;
 import com.money.manager.model.Category;
 import com.money.manager.model.Expense;
-import com.money.manager.exception.CustomException;
-import com.money.manager.factory.WalletFactory;
 import com.money.manager.model.User;
 import com.money.manager.model.Wallet;
-import com.money.manager.util.SummaryCalculator;
+import com.money.manager.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -38,11 +33,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -51,52 +44,31 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequestMapping("/resources/users")
 public class UserController {
 
-    private final UserDao userDao;
-    private final WalletDao walletDao;
-    private final BudgetDao budgetDao;
-    private final ExpenseDao expenseDao;
-    private final WalletFactory walletFactory;
+    private final UserService userService;
 
     @Autowired
-    public UserController(UserDao userDao, WalletDao walletDao, BudgetDao budgetDao, ExpenseDao expenseDao, WalletFactory walletFactory) {
-        this.userDao = userDao;
-        this.walletDao = walletDao;
-        this.budgetDao = budgetDao;
-        this.expenseDao = expenseDao;
-        this.walletFactory = walletFactory;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping(produces = APPLICATION_JSON_VALUE)
     public List<UserDto> getUsers() {
-        return userDao
-                .findAll()
-                .stream()
-                .map(UserDto::fromUser)
-                .collect(toList());
+        return userService.getUsers();
     }
 
     @PutMapping(value = "/{login}", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public <T> void updateUser(@PathVariable("login") String login, @RequestParam("field") String field, @RequestBody LinkedHashMap<String, T> value) {
-        userDao.updateField(login, field, value.get(field));
+        userService.updateUser(login, field, value);
     }
 
     @GetMapping(value = "/{login}/wallets", produces = APPLICATION_JSON_VALUE)
     public List<WalletDto> getWallets(@PathVariable("login") String login) {
-        // todo: move it from here to service
-        User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
-        List<WalletDto> wallets = new LinkedList<>(singletonList(walletFactory.getSummaryWallet(user)));
-        wallets.addAll(walletDao
-                .getAllFromUser(user)
-                .stream()
-                .map(WalletDto::fromWallet)
-                .collect(toList()));
-        return wallets;
+        return userService.getWallets(login);
     }
 
     @PostMapping(value = "/{login}/wallets", consumes = APPLICATION_JSON_VALUE)
     public void createWallet(@PathVariable("login") String login, @RequestBody WalletDto walletDto) {
-        User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
-        walletDao.addToUser(walletDto.toWallet(), user);
+        userService.addWallet(login, walletDto);
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/summary", produces = APPLICATION_JSON_VALUE)
@@ -104,9 +76,7 @@ public class UserController {
                               @PathVariable("id") Integer id,
                               @RequestParam(name = "start", required = false) String start,
                               @RequestParam(name = "end", required = false) String end) {
-        final List<Expense> expenses =
-                walletDao.getExpensesByWalletAndTimePeriod(login, id, new TimePeriod(start, end), null, null);
-        return SummaryCalculator.calculateSummary(expenses);
+        return userService.getSummary(login, id, new TimePeriod(start, end));
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/expenses", produces = APPLICATION_JSON_VALUE)
@@ -116,7 +86,7 @@ public class UserController {
                                      @RequestParam(name = "end", required = false) String end,
                                      @RequestParam(name = "limit", required = false) Integer limit,
                                      @RequestParam(name = "sort", required = false) String sort) {
-        return walletDao.getExpensesByWalletAndTimePeriod(login, id, new TimePeriod(start, end), limit, sort);
+        return userService.getExpenses(login, id, new TimePeriod(start, end), limit, sort);
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/highest_expense", produces = APPLICATION_JSON_VALUE)
@@ -124,23 +94,14 @@ public class UserController {
                                      @PathVariable("id") Integer id,
                                      @RequestParam(name = "start", required = false) String start,
                                      @RequestParam(name = "end", required = false) String end) {
-            TimePeriod timePeriod = new TimePeriod(start, end);
-            return walletDao.getHighestExpenseByWalletAndTimePeriod(login, id, timePeriod);
+        return userService.getHighestExpense(login, id, new TimePeriod(start, end));
     }
 
     @PostMapping(value = "/{login}/wallets/{id}/expenses", consumes = APPLICATION_JSON_VALUE)
     public void createExpense(@PathVariable("login") String login,
                               @PathVariable("id") Integer id,
                               @RequestBody ExpenseDto expense) {
-        // todo: move to service
-        User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
-        Wallet wallet = user
-                .getWallets()
-                .stream()
-                .filter(w -> w.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new WalletNotFoundException(""));
-        expenseDao.addToUserAndWallet(user, wallet, expense.toExpense());
+        userService.addExpense(login, id, expense);
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/counted_categories", produces = APPLICATION_JSON_VALUE)
@@ -148,8 +109,7 @@ public class UserController {
                                                         @PathVariable("id") Integer id,
                                                         @RequestParam(name = "start", required = false) String start,
                                                         @RequestParam(name = "end", required = false) String end) {
-            TimePeriod timePeriod = new TimePeriod(start, end);
-            return walletDao.getCountedCategoriesByWalletAndTimePeriod(login, id, timePeriod);
+        return userService.getCountedCategories(login, id, new TimePeriod(start, end));
     }
 
     @GetMapping(value = "/{login}/budgets", produces = APPLICATION_JSON_VALUE)
@@ -158,29 +118,13 @@ public class UserController {
                                             @RequestParam(name = "start_max", required = false) String startMax,
                                             @RequestParam(name = "end_min", required = false) String endMin,
                                             @RequestParam(name = "end_max", required = false) String endMax) {
-        User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
-        final List<Budget> budgets = budgetDao.getFromUserAndTimePeriod(user, new TimePeriod(startMin, startMax), new TimePeriod(endMin, endMax));
-        return budgets
-                .stream()
-                .map(budget -> BudgetOutputDto.fromBudget(budget, calculateCurrent(login, budget)))
-                .collect(toList());
+        return userService.getBudgets(login, new TimePeriod(startMin, startMax), new TimePeriod(endMin, endMax));
     }
 
 
     @PostMapping(value = "/{login}/budgets", consumes = APPLICATION_JSON_VALUE)
     public void createBudget(@PathVariable("login") String login, @Valid @RequestBody BudgetInputDto budget) {
-        User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
-        budgetDao.addToUser(budget.toBudget(), user);
-    }
-
-    // todo: move to service
-    @SneakyThrows
-    private BigDecimal calculateCurrent(String login, Budget budget) {
-        return expenseDao.getSummaryByUserTimePeriodAndCategory(
-                login,
-                new TimePeriod(budget.getStart(), budget.getEnd()),
-                budget.getCategory()
-        );
+        userService.addBudget(login, budget.toBudget());
     }
 
     @Data
@@ -200,26 +144,6 @@ public class UserController {
                     .total(total)
                     .start(timePeriod.getStart())
                     .end(timePeriod.getEnd())
-                    .build();
-        }
-    }
-
-    @Data
-    @NoArgsConstructor
-    @Builder
-    @AllArgsConstructor
-    static class BudgetOutputDto {
-        private Category category;
-        private BigDecimal total;
-        private BigDecimal current;
-        private TimePeriod timePeriod;
-
-        public static BudgetOutputDto fromBudget(Budget budget, BigDecimal current) {
-            return builder()
-                    .category(budget.getCategory())
-                    .total(budget.getTotal())
-                    .current(current)
-                    .timePeriod(new TimePeriod(budget.getStart(), budget.getEnd()))
                     .build();
         }
     }

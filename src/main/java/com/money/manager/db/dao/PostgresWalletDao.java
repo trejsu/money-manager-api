@@ -113,7 +113,7 @@ public class PostgresWalletDao implements WalletDao {
     private Map<String, BigDecimal> getMapFromQuery(List list) {
         Map<String, BigDecimal> result = new LinkedHashMap<>();
         Iterator itr = list.iterator();
-        while(itr.hasNext()){
+        while (itr.hasNext()) {
             Object[] obj = (Object[]) itr.next();
             result.put((String) obj[0], (BigDecimal) obj[1]);
         }

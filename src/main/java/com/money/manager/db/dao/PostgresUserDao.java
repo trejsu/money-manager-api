@@ -61,17 +61,6 @@ public class PostgresUserDao implements UserDao {
                 .list());
     }
 
-    @Override
-    public <T> void updateField(String login, String field, T value) throws CustomException {
-        User user = get(login).orElseThrow(() -> buildUserNotFoundException(login));
-        try {
-            PropertyUtils.setProperty(user, field, value);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new BadRequestException("Requested field cannot be updated. Validate entered data and try again.");
-        }
-        update(user);
-    }
-
     private UserNotFoundException buildUserNotFoundException(String login) {
         return new UserNotFoundException("User with login " + login + " does not exists");
     }
