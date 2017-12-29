@@ -6,19 +6,12 @@ import com.money.manager.dto.WalletDto;
 import com.money.manager.dto.UserDto;
 import com.money.manager.dto.Summary;
 import com.money.manager.dto.TimePeriod;
-import com.money.manager.exception.UserNotFoundException;
-import com.money.manager.exception.WalletNotFoundException;
 import com.money.manager.model.Budget;
 import com.money.manager.model.Category;
 import com.money.manager.model.Expense;
-import com.money.manager.model.User;
-import com.money.manager.model.Wallet;
 import com.money.manager.service.UserService;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,7 +29,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.stream.Collectors.toList;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 
@@ -67,8 +59,8 @@ public class UserController {
     }
 
     @PostMapping(value = "/{login}/wallets", consumes = APPLICATION_JSON_VALUE)
-    public void createWallet(@PathVariable("login") String login, @RequestBody WalletDto walletDto) {
-        userService.addWallet(login, walletDto);
+    public Integer createWallet(@PathVariable("login") String login, @RequestBody WalletDto walletDto) {
+        return userService.addWallet(login, walletDto);
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/summary", produces = APPLICATION_JSON_VALUE)

@@ -34,6 +34,11 @@ public class PostgresWalletDao implements WalletDao {
         this.postgres = postgres;
     }
 
+    @Override
+    public Integer add(Wallet newInstance) {
+        return postgres.executeQuery(session -> (Integer) session.save(newInstance));
+    }
+
     // todo: it fits more to expenses dao
     // todo: user not found
     // todo: wallet not found
@@ -139,15 +144,6 @@ public class PostgresWalletDao implements WalletDao {
 
     private String getWhereClause(Integer id) {
         return (id == ID_OF_SUMMARY_WALLET) ? "WHERE u.login = :id " : "WHERE w.id = :id ";
-    }
-
-    @Override
-    public void addToUser(Wallet newInstance, User user) {
-        postgres.executeQuery(session -> {
-            user.getWallets().add(newInstance);
-            userDao.update(user);
-            return user;
-        });
     }
 
     @Override

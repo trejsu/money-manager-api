@@ -78,7 +78,7 @@ public class UserService {
     public <T> void updateUser(String login, String field, LinkedHashMap<String, T> value) {
         User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
         try {
-            PropertyUtils.setProperty(user, field, value);
+            PropertyUtils.setProperty(user, field, value.get(field));
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new BadRequestException("Requested field cannot be updated. Validate entered data and try again.");
         }
@@ -96,9 +96,13 @@ public class UserService {
         return wallets;
     }
 
-    public void addWallet(String login, WalletDto walletDto) {
+    public Integer addWallet(String login, WalletDto walletDto) {
         User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
-        walletDao.addToUser(walletDto.toWallet(), user);
+        final Wallet wallet = walletDto.toWallet();
+        Integer id = walletDao.add(wallet);
+        user.getWallets().add(wallet);
+        userDao.update(user);
+        return id;
     }
 
     public Summary getSummary(String login, Integer id, TimePeriod timePeriod) {

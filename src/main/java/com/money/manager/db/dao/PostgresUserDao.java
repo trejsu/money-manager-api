@@ -2,15 +2,11 @@ package com.money.manager.db.dao;
 
 import com.money.manager.db.PostgresUtil;
 import com.money.manager.model.User;
-import com.money.manager.exception.BadRequestException;
-import com.money.manager.exception.CustomException;
 import com.money.manager.exception.LoginAlreadyTakenException;
 import com.money.manager.exception.UserNotFoundException;
-import org.apache.commons.beanutils.PropertyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Optional;
 

@@ -16,9 +16,10 @@ public interface WalletDao {
     Expense getHighestExpenseByWalletAndTimePeriod(String login, Integer id, TimePeriod timePeriod);
     Map<String, BigDecimal> getCountedCategoriesByWalletAndTimePeriod(String login, Integer id, TimePeriod timePeriod);
 
-    void addToUser(Wallet newInstance, User user);
-
     List<Wallet> getAllFromUser(User user);
 
     BigDecimal getSummaryAmountForUser(User user);
+
+    Integer add(Wallet newInstance);
+
 }
