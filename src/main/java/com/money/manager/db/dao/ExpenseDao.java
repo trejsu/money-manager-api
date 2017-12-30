@@ -10,6 +10,6 @@ import java.math.BigDecimal;
 
 public interface ExpenseDao {
     BigDecimal getSummaryByUserTimePeriodAndCategory(String login, TimePeriod timePeriod, Category category);
+    Integer add(Expense newInstance);
 
-    void addToUserAndWallet(User user, Wallet wallet, Expense expense);
 }

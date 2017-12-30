@@ -88,10 +88,10 @@ public class UserController {
     }
 
     @PostMapping(value = "/{login}/wallets/{id}/expenses", consumes = APPLICATION_JSON_VALUE)
-    public void createExpense(@PathVariable("login") String login,
+    public Integer createExpense(@PathVariable("login") String login,
                               @PathVariable("id") Integer id,
                               @RequestBody ExpenseDto expense) {
-        userService.addExpense(login, id, expense);
+        return userService.addExpense(login, id, expense);
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/counted_categories", produces = APPLICATION_JSON_VALUE)

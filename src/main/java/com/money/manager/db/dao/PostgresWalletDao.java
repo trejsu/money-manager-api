@@ -38,29 +38,10 @@ public class PostgresWalletDao implements WalletDao {
     }
 
     @Override
-    public Expense getHighestExpenseByWalletAndTimePeriod(String login, Integer id, TimePeriod timePeriod) {
-        return postgres.executeQuery(session -> {
-            String query =
-                    "SELECT e FROM User u " +
-                            "JOIN u.wallets w " +
-                            "JOIN w.expenses e " +
-                            "JOIN e.category c " +
-                            getWhereClause(id) +
-                            "AND e.date >= :start " +
-                            "AND e.date <= :end " +
-                            "AND c.profit = FALSE " +
-                            "ORDER BY e.amount DESC ";
-            try {
-                return session
-                        .createQuery(query, Expense.class)
-                        .setParameter("id", getId(id, login))
-                        .setParameter("start", timePeriod.getStart())
-                        .setParameter("end" , timePeriod.getEnd())
-                        .setMaxResults(1)
-                        .getSingleResult();
-            } catch(NoResultException e) {
-                return null;
-            }
+    public void update(Wallet transientObject) {
+        postgres.executeQuery(session -> {
+            session.update(transientObject);
+            return transientObject;
         });
     }
 

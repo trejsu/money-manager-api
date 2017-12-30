@@ -4,23 +4,16 @@ import com.money.manager.db.PostgresUtil;
 import com.money.manager.dto.TimePeriod;
 import com.money.manager.model.Category;
 import com.money.manager.model.Expense;
-import com.money.manager.model.User;
-import com.money.manager.model.Wallet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 import static java.math.BigDecimal.ZERO;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.util.Optional.ofNullable;
 
 @Service
 public class PostgresExpenseDao implements ExpenseDao {
-
-    private final static DateTimeFormatter DATE_TIME_FORMATTER = ISO_LOCAL_DATE;
 
     private final PostgresUtil postgres;
 
@@ -55,26 +48,7 @@ public class PostgresExpenseDao implements ExpenseDao {
     }
 
     @Override
-    public void addToUserAndWallet(User user, Wallet wallet, Expense expense) {
-        postgres.executeQuery(session -> {
-            expense.setDate(getToday());
-            session.save(expense);
-            wallet.getExpenses().add(expense);
-            updateAmount(wallet, expense);
-            session.update(wallet);
-            return null;
-        });
-    }
-
-    private String getToday() {
-        return LocalDate.now().format(DATE_TIME_FORMATTER);
-    }
-
-    private void updateAmount(Wallet wallet, Expense expense) {
-        BigDecimal amount = expense.getAmount();
-        if (!expense.getCategory().isProfit()) {
-            amount = amount.negate();
-        }
-        wallet.setAmount(wallet.getAmount().add(amount));
+    public Integer add(Expense newInstance) {
+        return postgres.executeQuery(session -> (Integer) session.save(newInstance));
     }
 }

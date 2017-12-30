@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 public interface WalletDao {
-    Expense getHighestExpenseByWalletAndTimePeriod(String login, Integer id, TimePeriod timePeriod);
     Map<String, BigDecimal> getCountedCategoriesByWalletAndTimePeriod(String login, Integer id, TimePeriod timePeriod);
 
     List<Wallet> getAllFromUser(User user);
@@ -19,5 +18,7 @@ public interface WalletDao {
     BigDecimal getSummaryAmountForUser(User user);
 
     Integer add(Wallet newInstance);
+
+    void update(Wallet transientObject);
 
 }

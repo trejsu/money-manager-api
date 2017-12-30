@@ -24,17 +24,22 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 
 
 @Service
 public class UserService {
+
+    private final static DateTimeFormatter DATE_TIME_FORMATTER = ISO_LOCAL_DATE;
 
     private final UserDao userDao;
     private final WalletDao walletDao;
@@ -99,13 +104,25 @@ public class UserService {
     }
 
     public Expense getHighestExpense(String login, Integer id, TimePeriod timePeriod) {
-        return walletDao.getHighestExpenseByWalletAndTimePeriod(login, id, timePeriod);
+        List<Expense> expenses = getExpenses(login, id, timePeriod);
+        return expenses
+                .stream()
+                .filter(e -> !e.getCategory().isProfit())
+                .sorted((e1, e2) -> e2.getAmount().compareTo(e1.getAmount()))
+                .findFirst()
+                .orElse(null);
     }
 
-    public void addExpense(String login, Integer id, ExpenseDto expense) {
+    public Integer addExpense(String login, Integer id, ExpenseDto expenseDto) {
         User user = getUser(login);
         Wallet wallet = getWallet(id, user);
-        expenseDao.addToUserAndWallet(user, wallet, expense.toExpense());
+        Expense expense = expenseDto.toExpense();
+        expense.setDate(LocalDate.now().format(DATE_TIME_FORMATTER));
+        Integer expenseId = expenseDao.add(expense);
+        wallet.getExpenses().add(expense);
+        updateAmount(wallet, expense);
+        walletDao.update(wallet);
+        return expenseId;
     }
 
     public Map<String, BigDecimal> getCountedCategories(String login, Integer id, TimePeriod timePeriod) {
@@ -178,5 +195,13 @@ public class UserService {
                 .flatMap(List::stream)
                 .filter(expense -> timePeriod.containsDate(expense.getDate()))
                 .collect(toList());
+    }
+
+    private void updateAmount(Wallet wallet, Expense expense) {
+        BigDecimal amount = expense.getAmount();
+        if (!expense.getCategory().isProfit()) {
+            amount = amount.negate();
+        }
+        wallet.setAmount(wallet.getAmount().add(amount));
     }
 }
