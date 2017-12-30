@@ -113,8 +113,8 @@ public class UserController {
 
 
     @PostMapping(value = "/{login}/budgets", consumes = APPLICATION_JSON_VALUE)
-    public void createBudget(@PathVariable("login") String login, @Valid @RequestBody BudgetInputDto budget) {
-        userService.addBudget(login, budget.toBudget());
+    public Integer createBudget(@PathVariable("login") String login, @Valid @RequestBody BudgetInputDto budget) {
+        return userService.addBudget(login, budget.toBudget());
     }
 
     @Data

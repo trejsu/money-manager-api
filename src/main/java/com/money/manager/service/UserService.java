@@ -131,16 +131,20 @@ public class UserService {
 
     public List<BudgetOutputDto> getBudgets(String login, TimePeriod start, TimePeriod end) {
         User user = getUser(login);
-        final List<Budget> budgets = budgetDao.getFromUserAndTimePeriod(user, start, end);
-        return budgets
+        return user
+                .getBudgets()
                 .stream()
+                .filter(budget -> start.containsDate(budget.getStart()) && end.containsDate(budget.getEnd()))
                 .map(budget -> BudgetOutputDto.fromBudget(budget, calculateCurrent(login, budget)))
                 .collect(toList());
     }
 
-    public void addBudget(String login, Budget budget) {
+    public Integer addBudget(String login, Budget budget) {
         User user = getUser(login);
-        budgetDao.addToUser(budget, user);
+        user.getBudgets().add(budget);
+        Integer id = budgetDao.add(budget);
+        userDao.update(user);
+        return id;
     }
 
     private Summary calculateSummary(List<Expense> expenses) {

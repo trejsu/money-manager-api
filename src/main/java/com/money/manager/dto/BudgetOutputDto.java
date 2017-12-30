@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 @Builder
 @AllArgsConstructor
 public class BudgetOutputDto {
+    private Integer id;
     private Category category;
     private BigDecimal total;
     private BigDecimal current;
@@ -21,6 +22,7 @@ public class BudgetOutputDto {
 
     public static BudgetOutputDto fromBudget(Budget budget, BigDecimal current) {
         return builder()
+                .id(budget.getId())
                 .category(budget.getCategory())
                 .total(budget.getTotal())
                 .current(current)
