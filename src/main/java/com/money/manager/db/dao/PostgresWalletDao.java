@@ -25,42 +25,16 @@ public class PostgresWalletDao implements WalletDao {
 
     private final static int ID_OF_SUMMARY_WALLET = 0;
 
-    private final UserDao userDao;
     private final PostgresUtil postgres;
 
     @Autowired
-    public PostgresWalletDao(UserDao userDao, PostgresUtil postgres) {
-        this.userDao = userDao;
+    public PostgresWalletDao(PostgresUtil postgres) {
         this.postgres = postgres;
     }
 
     @Override
     public Integer add(Wallet newInstance) {
         return postgres.executeQuery(session -> (Integer) session.save(newInstance));
-    }
-
-    // todo: it fits more to expenses dao
-    // todo: user not found
-    // todo: wallet not found
-    @Override
-    public List<Expense> getExpensesByWalletAndTimePeriod(String login, Integer id, TimePeriod timePeriod, Integer limit, String sort) {
-        return postgres.executeQuery(session -> {
-            String query =
-                    "SELECT e FROM User u " +
-                    "JOIN u.wallets w " +
-                    "JOIN w.expenses e " +
-                    getWhereClause(id) +
-                    "AND e.date >= :start " +
-                    "AND e.date <= :end " +
-                    getOrderBy(sort);
-            return session
-                    .createQuery(query, Expense.class)
-                    .setParameter("id", getId(id, login))
-                    .setParameter("start", timePeriod.getStart())
-                    .setParameter("end" , timePeriod.getEnd())
-                    .setMaxResults(getMaxResults(limit))
-                    .list();
-        });
     }
 
     @Override
@@ -123,19 +97,6 @@ public class PostgresWalletDao implements WalletDao {
             result.put((String) obj[0], (BigDecimal) obj[1]);
         }
         return result;
-    }
-
-    private String getOrderBy(String sort) {
-        return (sort == null || sort.isEmpty()) ? "ORDER BY e.id DESC" : matchSort(sort);
-    }
-
-    // todo: implement when needed
-    private String matchSort(String sort) {
-        return "ORDER BY e.id DESC";
-    }
-
-    private int getMaxResults(Integer limit) {
-        return (limit == null || limit < 0) ? Integer.MAX_VALUE : limit;
     }
 
     private Object getId(Integer id, String login) {

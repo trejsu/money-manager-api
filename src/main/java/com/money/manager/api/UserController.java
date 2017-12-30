@@ -75,10 +75,8 @@ public class UserController {
     public List<Expense> getExpenses(@PathVariable("login") String login,
                                      @PathVariable("id") Integer id,
                                      @RequestParam(name = "start", required = false) String start,
-                                     @RequestParam(name = "end", required = false) String end,
-                                     @RequestParam(name = "limit", required = false) Integer limit,
-                                     @RequestParam(name = "sort", required = false) String sort) {
-        return userService.getExpenses(login, id, new TimePeriod(start, end), limit, sort);
+                                     @RequestParam(name = "end", required = false) String end) {
+        return userService.getExpenses(login, id, new TimePeriod(start, end));
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/highest_expense", produces = APPLICATION_JSON_VALUE)

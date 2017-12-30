@@ -3,13 +3,13 @@ package com.money.manager.dto;
 import com.money.manager.common.validation.StartDateBeforeEndDate;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import java.time.LocalDate;
 
 import static org.springframework.util.StringUtils.isEmpty;
 
 @NoArgsConstructor
 @Getter
-@Setter
 @StartDateBeforeEndDate
 public class TimePeriod {
 
@@ -30,5 +30,12 @@ public class TimePeriod {
 
     public void setEnd(String end) {
         this.end = isEmpty(end) ? MAX_DATE : end;
+    }
+
+    public boolean containsDate(String date) {
+        final LocalDate parsedDate = LocalDate.parse(date);
+        final LocalDate startDate = LocalDate.parse(start);
+        final LocalDate endDate = LocalDate.parse(end);
+        return !(parsedDate.isBefore(startDate) || parsedDate.isAfter(endDate));
     }
 }

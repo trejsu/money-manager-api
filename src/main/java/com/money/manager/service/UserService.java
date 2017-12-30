@@ -1,6 +1,5 @@
 package com.money.manager.service;
 
-import com.money.manager.api.UserController;
 import com.money.manager.db.dao.BudgetDao;
 import com.money.manager.db.dao.ExpenseDao;
 import com.money.manager.db.dao.UserDao;
@@ -16,29 +15,15 @@ import com.money.manager.exception.UserNotFoundException;
 import com.money.manager.exception.WalletNotFoundException;
 import com.money.manager.factory.WalletFactory;
 import com.money.manager.model.Budget;
-import com.money.manager.model.Category;
 import com.money.manager.model.Expense;
 import com.money.manager.model.User;
 import com.money.manager.model.Wallet;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.rmi.CORBA.Tie;
-import javax.validation.Valid;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.sql.Time;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,7 +31,6 @@ import java.util.Map;
 
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 
 @Service
@@ -76,7 +60,7 @@ public class UserService {
     }
 
     public <T> void updateUser(String login, String field, LinkedHashMap<String, T> value) {
-        User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
+        User user = getUser(login);
         try {
             PropertyUtils.setProperty(user, field, value.get(field));
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
@@ -86,7 +70,7 @@ public class UserService {
     }
 
     public List<WalletDto> getWallets(String login) {
-        User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
+        User user = getUser(login);
         List<WalletDto> wallets = new LinkedList<>(singletonList(walletFactory.getSummaryWallet(user)));
         wallets.addAll(walletDao
                 .getAllFromUser(user)
@@ -97,7 +81,7 @@ public class UserService {
     }
 
     public Integer addWallet(String login, WalletDto walletDto) {
-        User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
+        User user = getUser(login);
         final Wallet wallet = walletDto.toWallet();
         Integer id = walletDao.add(wallet);
         user.getWallets().add(wallet);
@@ -106,13 +90,12 @@ public class UserService {
     }
 
     public Summary getSummary(String login, Integer id, TimePeriod timePeriod) {
-        final List<Expense> expenses =
-                walletDao.getExpensesByWalletAndTimePeriod(login, id, timePeriod, null, null);
-        return calculateSummary(expenses);
+        return calculateSummary(getExpenses(login, id, timePeriod));
     }
 
-    public List<Expense> getExpenses(String login, Integer id, TimePeriod timePeriod, Integer limit, String sort) {
-        return walletDao.getExpensesByWalletAndTimePeriod(login, id, timePeriod, limit, sort);
+    public List<Expense> getExpenses(String login, Integer id, TimePeriod timePeriod) {
+        User user = getUser(login);
+        return id == 0 ? getAllExpenses(user, timePeriod) : getExpensesFromWallet(user, id, timePeriod);
     }
 
     public Expense getHighestExpense(String login, Integer id, TimePeriod timePeriod) {
@@ -120,13 +103,8 @@ public class UserService {
     }
 
     public void addExpense(String login, Integer id, ExpenseDto expense) {
-        User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
-        Wallet wallet = user
-                .getWallets()
-                .stream()
-                .filter(w -> w.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new WalletNotFoundException(""));
+        User user = getUser(login);
+        Wallet wallet = getWallet(id, user);
         expenseDao.addToUserAndWallet(user, wallet, expense.toExpense());
     }
 
@@ -135,7 +113,7 @@ public class UserService {
     }
 
     public List<BudgetOutputDto> getBudgets(String login, TimePeriod start, TimePeriod end) {
-        User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
+        User user = getUser(login);
         final List<Budget> budgets = budgetDao.getFromUserAndTimePeriod(user, start, end);
         return budgets
                 .stream()
@@ -144,7 +122,7 @@ public class UserService {
     }
 
     public void addBudget(String login, Budget budget) {
-        User user = userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
+        User user = getUser(login);
         budgetDao.addToUser(budget, user);
     }
 
@@ -168,5 +146,37 @@ public class UserService {
                 new TimePeriod(budget.getStart(), budget.getEnd()),
                 budget.getCategory()
         );
+    }
+
+    private User getUser(String login) {
+        return userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
+    }
+
+    private Wallet getWallet(Integer id, User user) {
+        return user
+                .getWallets()
+                .stream()
+                .filter(w -> w.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new WalletNotFoundException(""));
+    }
+
+    private List<Expense> getExpensesFromWallet(User user, Integer id, TimePeriod timePeriod) {
+        Wallet wallet = getWallet(id, user);
+        return wallet
+                .getExpenses()
+                .stream()
+                .filter(expense -> timePeriod.containsDate(expense.getDate()))
+                .collect(toList());
+    }
+
+    private List<Expense> getAllExpenses(User user, TimePeriod timePeriod) {
+        return user
+                .getWallets()
+                .stream()
+                .map(Wallet::getExpenses)
+                .flatMap(List::stream)
+                .filter(expense -> timePeriod.containsDate(expense.getDate()))
+                .collect(toList());
     }
 }

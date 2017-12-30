@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 public interface WalletDao {
-    // todo: too many arguments
-    List<Expense> getExpensesByWalletAndTimePeriod(String login, Integer id, TimePeriod timePeriod, Integer limit, String sort);
     Expense getHighestExpenseByWalletAndTimePeriod(String login, Integer id, TimePeriod timePeriod);
     Map<String, BigDecimal> getCountedCategoriesByWalletAndTimePeriod(String login, Integer id, TimePeriod timePeriod);
 

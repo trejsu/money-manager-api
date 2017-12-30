@@ -13,7 +13,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import static java.math.BigDecimal.ZERO;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static java.util.Optional.ofNullable;
 
 @Service
 public class PostgresExpenseDao implements ExpenseDao {
@@ -49,10 +51,7 @@ public class PostgresExpenseDao implements ExpenseDao {
                     .setParameter("end" , timePeriod.getEnd())
                     .getSingleResult();
         });
-        if (sum == null) {
-            return BigDecimal.valueOf(0);
-        }
-        return sum;
+        return ofNullable(sum).orElse(ZERO);
     }
 
     @Override
