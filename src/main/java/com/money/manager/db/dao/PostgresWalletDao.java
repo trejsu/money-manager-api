@@ -2,7 +2,6 @@ package com.money.manager.db.dao;
 
 import com.money.manager.db.PostgresUtil;
 import com.money.manager.dto.TimePeriod;
-import com.money.manager.model.Expense;
 import com.money.manager.model.User;
 import com.money.manager.model.Wallet;
 import com.money.manager.exception.CustomException;
