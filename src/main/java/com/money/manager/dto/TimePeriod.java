@@ -24,14 +24,6 @@ public class TimePeriod {
         this.end = isEmpty(end) ? MAX_DATE : end;
     }
 
-    public void setStart(String start) {
-        this.start = isEmpty(start) ? MIN_DATE : start;
-    }
-
-    public void setEnd(String end) {
-        this.end = isEmpty(end) ? MAX_DATE : end;
-    }
-
     public boolean containsDate(String date) {
         final LocalDate parsedDate = LocalDate.parse(date);
         final LocalDate startDate = LocalDate.parse(start);
