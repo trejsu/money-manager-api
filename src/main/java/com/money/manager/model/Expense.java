@@ -41,6 +41,9 @@ public class Expense {
     @Column(name = "amount")
     private BigDecimal amount;
 
+    @Column(name = "currency")
+    private String currency;
+
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "category_name", referencedColumnName = "name"),
