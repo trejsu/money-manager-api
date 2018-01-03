@@ -8,6 +8,6 @@ import java.math.BigDecimal;
 @Data
 @AllArgsConstructor
 public class Summary {
-    private BigDecimal inflow;
-    private BigDecimal outflow;
+    private Money inflow;
+    private Money outflow;
 }
