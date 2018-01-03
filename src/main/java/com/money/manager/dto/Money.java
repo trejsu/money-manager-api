@@ -3,7 +3,7 @@ package com.money.manager.dto;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 import java.math.BigDecimal;
@@ -13,7 +13,7 @@ import java.util.HashMap;
 import static java.util.Optional.ofNullable;
 
 @Value
-@AllArgsConstructor
+@EqualsAndHashCode
 public class Money implements Comparable<Money> {
 
     private final static String DEFAULT_CURRENCY = "PLN";
@@ -26,40 +26,18 @@ public class Money implements Comparable<Money> {
     @JsonCreator
     public Money(@JsonProperty("amount") BigDecimal amount, @JsonProperty("currency") String currencyCode) {
         this.amount = amount;
-        System.out.println("amount = " + amount);
-        System.out.println("precision = " + amount.precision());
-        System.out.println("scale = " + amount.scale());
         final String code = ofNullable(currencyCode).orElse(DEFAULT_CURRENCY);
         this.currency = Currency.getInstance(code);
+    }
+
+    private Money(BigDecimal amount, Currency currency) {
+        this.amount = amount;
+        this.currency = currency;
     }
 
     @Override
     public int compareTo(Money other) {
         return 0;
-    }
-
-
-    public boolean equals(Object o) {
-        if (o == this) return true;
-        if (!(o instanceof Money)) return false;
-        final Money other = (Money) o;
-        final Object this$amount = this.getAmount();
-        final Object other$amount = other.getAmount();
-        if (this$amount == null ? other$amount != null : !this$amount.equals(other$amount)) return false;
-        final Object this$currency = this.getCurrency();
-        final Object other$currency = other.getCurrency();
-        if (this$currency == null ? other$currency != null : !this$currency.equals(other$currency)) return false;
-        return true;
-    }
-
-    public int hashCode() {
-        final int PRIME = 59;
-        int result = 1;
-        final Object $amount = this.getAmount();
-        result = result * PRIME + ($amount == null ? 43 : $amount.hashCode());
-        final Object $currency = this.getCurrency();
-        result = result * PRIME + ($currency == null ? 43 : $currency.hashCode());
-        return result;
     }
 
     public static Money zero() {
