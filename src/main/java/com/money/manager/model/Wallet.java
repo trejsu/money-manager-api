@@ -14,8 +14,8 @@ import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
 import static javax.persistence.FetchType.EAGER;
 import static javax.persistence.GenerationType.IDENTITY;
 
@@ -46,6 +46,6 @@ public class Wallet {
         this.id = id;
         this.amount = amount;
         this.name = name;
-        this.expenses = Optional.ofNullable(expenses).orElse(new LinkedList<>());
+        this.expenses = ofNullable(expenses).orElse(new LinkedList<>());
     }
 }

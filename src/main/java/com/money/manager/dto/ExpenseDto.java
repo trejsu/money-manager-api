@@ -8,8 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -17,12 +15,13 @@ import java.math.BigDecimal;
 @Builder
 public class ExpenseDto {
     private String message;
-    private BigDecimal amount;
+    private Money money;
     private Category category;
 
     public Expense toExpense() {
         return Expense.builder()
-                .amount(amount)
+                .amount(money.getAmount())
+                .currency(money.getCurrency().getCurrencyCode())
                 .category(category)
                 .message(message)
                 .build();
