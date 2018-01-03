@@ -1,7 +1,8 @@
 package com.money.manager.api;
 
 import com.money.manager.dto.BudgetOutputDto;
-import com.money.manager.dto.ExpenseDto;
+import com.money.manager.dto.ExpenseInputDto;
+import com.money.manager.dto.ExpenseOutputDto;
 import com.money.manager.dto.WalletDto;
 import com.money.manager.dto.UserDto;
 import com.money.manager.dto.Summary;
@@ -72,15 +73,15 @@ public class UserController {
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/expenses", produces = APPLICATION_JSON_VALUE)
-    public List<Expense> getExpenses(@PathVariable("login") String login,
-                                     @PathVariable("id") Integer id,
-                                     @RequestParam(name = "start", required = false) String start,
-                                     @RequestParam(name = "end", required = false) String end) {
+    public List<ExpenseOutputDto> getExpenses(@PathVariable("login") String login,
+                                              @PathVariable("id") Integer id,
+                                              @RequestParam(name = "start", required = false) String start,
+                                              @RequestParam(name = "end", required = false) String end) {
         return userService.getExpenses(login, id, new TimePeriod(start, end));
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/highest_expense", produces = APPLICATION_JSON_VALUE)
-    public Expense getHighestExpense(@PathVariable("login") String login,
+    public ExpenseOutputDto getHighestExpense(@PathVariable("login") String login,
                                      @PathVariable("id") Integer id,
                                      @RequestParam(name = "start", required = false) String start,
                                      @RequestParam(name = "end", required = false) String end) {
@@ -90,7 +91,7 @@ public class UserController {
     @PostMapping(value = "/{login}/wallets/{id}/expenses", consumes = APPLICATION_JSON_VALUE)
     public Integer createExpense(@PathVariable("login") String login,
                               @PathVariable("id") Integer id,
-                              @RequestBody ExpenseDto expense) {
+                              @RequestBody ExpenseInputDto expense) {
         return userService.addExpense(login, id, expense);
     }
 

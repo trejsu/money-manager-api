@@ -5,7 +5,9 @@ import com.money.manager.db.dao.ExpenseDao;
 import com.money.manager.db.dao.UserDao;
 import com.money.manager.db.dao.WalletDao;
 import com.money.manager.dto.BudgetOutputDto;
-import com.money.manager.dto.ExpenseDto;
+import com.money.manager.dto.ExpenseInputDto;
+import com.money.manager.dto.ExpenseOutputDto;
+import com.money.manager.dto.Money;
 import com.money.manager.dto.Summary;
 import com.money.manager.dto.TimePeriod;
 import com.money.manager.dto.UserDto;
@@ -98,25 +100,25 @@ public class UserService {
         return calculateSummary(getExpenses(login, id, timePeriod));
     }
 
-    public List<Expense> getExpenses(String login, Integer id, TimePeriod timePeriod) {
+    public List<ExpenseOutputDto> getExpenses(String login, Integer id, TimePeriod timePeriod) {
         User user = getUser(login);
         return id == 0 ? getAllExpenses(user, timePeriod) : getExpensesFromWallet(user, id, timePeriod);
     }
 
-    public Expense getHighestExpense(String login, Integer id, TimePeriod timePeriod) {
-        List<Expense> expenses = getExpenses(login, id, timePeriod);
+    public ExpenseOutputDto getHighestExpense(String login, Integer id, TimePeriod timePeriod) {
+        List<ExpenseOutputDto> expenses = getExpenses(login, id, timePeriod);
         return expenses
                 .stream()
                 .filter(e -> !e.getCategory().isProfit())
-                .sorted((e1, e2) -> e2.getAmount().compareTo(e1.getAmount()))
+                .sorted((e1, e2) -> e2.getMoney().compareTo(e1.getMoney()))
                 .findFirst()
                 .orElse(null);
     }
 
-    public Integer addExpense(String login, Integer id, ExpenseDto expenseDto) {
+    public Integer addExpense(String login, Integer id, ExpenseInputDto expenseInputDto) {
         User user = getUser(login);
         Wallet wallet = getWallet(id, user);
-        Expense expense = expenseDto.toExpense();
+        Expense expense = expenseInputDto.toExpense();
         expense.setDate(LocalDate.now().format(DATE_TIME_FORMATTER));
         Integer expenseId = expenseDao.add(expense);
         wallet.getExpenses().add(expense);
@@ -147,15 +149,15 @@ public class UserService {
         return id;
     }
 
-    private Summary calculateSummary(List<Expense> expenses) {
-        BigDecimal inflow = new BigDecimal(0);
-        BigDecimal outflow = new BigDecimal(0);
-        for (Expense expense : expenses) {
-            BigDecimal amount = expense.getAmount();
+    private Summary calculateSummary(List<ExpenseOutputDto> expenses) {
+        Money inflow = Money.zero();
+        Money outflow = Money.zero();
+        for (ExpenseOutputDto expense : expenses) {
+            Money money = expense.getMoney();
             if (expense.getCategory().isProfit()) {
-                inflow = inflow.add(amount);
+                inflow = inflow.add(money);
             } else {
-                outflow = outflow.add(amount);
+                outflow = outflow.add(money);
             }
         }
         return new Summary(inflow, outflow);
@@ -182,22 +184,24 @@ public class UserService {
                 .orElseThrow(() -> new WalletNotFoundException(""));
     }
 
-    private List<Expense> getExpensesFromWallet(User user, Integer id, TimePeriod timePeriod) {
+    private List<ExpenseOutputDto> getExpensesFromWallet(User user, Integer id, TimePeriod timePeriod) {
         Wallet wallet = getWallet(id, user);
         return wallet
                 .getExpenses()
                 .stream()
                 .filter(expense -> timePeriod.containsDate(expense.getDate()))
+                .map(ExpenseOutputDto::fromExpense)
                 .collect(toList());
     }
 
-    private List<Expense> getAllExpenses(User user, TimePeriod timePeriod) {
+    private List<ExpenseOutputDto> getAllExpenses(User user, TimePeriod timePeriod) {
         return user
                 .getWallets()
                 .stream()
                 .map(Wallet::getExpenses)
                 .flatMap(List::stream)
                 .filter(expense -> timePeriod.containsDate(expense.getDate()))
+                .map(ExpenseOutputDto::fromExpense)
                 .collect(toList());
     }
 
