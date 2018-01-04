@@ -1,22 +1,21 @@
-package com.money.manager.dto;
+package com.money.manager.model.money;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 import java.math.BigDecimal;
 import java.util.Currency;
-import java.util.HashMap;
 
 import static java.util.Optional.ofNullable;
 
 @Value
-@EqualsAndHashCode
 public class Money implements Comparable<Money> {
 
     private final static String DEFAULT_CURRENCY = "PLN";
+
+    public final static Money ZERO = new Money(BigDecimal.ZERO, DEFAULT_CURRENCY);
 
     private BigDecimal amount;
 
@@ -41,33 +40,10 @@ public class Money implements Comparable<Money> {
         return amount.compareTo(converted.amount);
     }
 
-    public static Money zero() {
-        return new Money(BigDecimal.ZERO, DEFAULT_CURRENCY);
-    }
-
     public Money add(Money other) {
         Money converted = other.convertTo(currency);
         BigDecimal newAmount = amount.add(converted.amount);
         return new Money(newAmount, currency);
-    }
-
-    // todo: move it from here
-    private final static HashMap<String, BigDecimal> CONVERSION_RATES = new HashMap<>();
-    static { CONVERSION_RATES.put(DEFAULT_CURRENCY, BigDecimal.ONE); }
-
-    private BigDecimal getRate(Currency from, Currency to) {
-        final BigDecimal fromRate = CONVERSION_RATES.get(from.getCurrencyCode());
-        final BigDecimal toRate = CONVERSION_RATES.get(to.getCurrencyCode());
-        return fromRate.multiply(BigDecimal.ONE.divide(toRate, BigDecimal.ROUND_HALF_UP));
-    }
-
-    private Money convertTo(Currency newCurrency) {
-        if (currency.equals(newCurrency)) {
-            return this;
-        } else {
-            final BigDecimal newAmount = amount.multiply(getRate(currency, newCurrency));
-            return new Money(newAmount, newCurrency);
-        }
     }
 
     public Money substract(Money other) {
@@ -75,4 +51,11 @@ public class Money implements Comparable<Money> {
         BigDecimal newAmount = amount.subtract(converted.amount);
         return new Money(newAmount, currency);
     }
+
+    private Money convertTo(Currency newCurrency) {
+        return currency.equals(newCurrency) ? this : new Money(MoneyConverter.convert(amount, currency, newCurrency), newCurrency);
+    }
+
 }
+
+
