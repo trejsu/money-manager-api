@@ -10,18 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static java.util.Comparator.comparingInt;
 
 @Service
 public class PostgresWalletDao implements WalletDao {
-
-    private final static int ID_OF_SUMMARY_WALLET = 0;
 
     private final PostgresUtil postgres;
 
@@ -41,49 +36,6 @@ public class PostgresWalletDao implements WalletDao {
             session.update(transientObject);
             return transientObject;
         });
-    }
-
-    @Override
-    public Map<String, BigDecimal> getCountedCategoriesByWalletAndTimePeriod(String login, Integer id, TimePeriod timePeriod) {
-        return postgres.executeQuery(session -> {
-            String queryString =
-                "SELECT c.name, sum(e.amount) FROM User u " +
-                "JOIN u.wallets w " +
-                "JOIN w.expenses e " +
-                "JOIN e.category c " +
-                getWhereClause(id) +
-                "AND e.date >= :start " +
-                "AND e.date <= :end " +
-                "AND c.profit = FALSE " +
-                "AND c.name != :transfer " +
-                "GROUP BY c.name " +
-                "ORDER BY sum(e.amount) DESC";
-            Query query = session
-                    .createQuery(queryString)
-                    .setParameter("id", getId(id, login))
-                    .setParameter("start", timePeriod.getStart())
-                    .setParameter("transfer", "transfer")
-                    .setParameter("end", timePeriod.getEnd());
-            return getMapFromQuery(query.list());
-        });
-    }
-
-    private Map<String, BigDecimal> getMapFromQuery(List list) {
-        Map<String, BigDecimal> result = new LinkedHashMap<>();
-        Iterator itr = list.iterator();
-        while (itr.hasNext()) {
-            Object[] obj = (Object[]) itr.next();
-            result.put((String) obj[0], (BigDecimal) obj[1]);
-        }
-        return result;
-    }
-
-    private Object getId(Integer id, String login) {
-        return (id == ID_OF_SUMMARY_WALLET) ? login : id;
-    }
-
-    private String getWhereClause(Integer id) {
-        return (id == ID_OF_SUMMARY_WALLET) ? "WHERE u.login = :id " : "WHERE w.id = :id ";
     }
 
     @Override
