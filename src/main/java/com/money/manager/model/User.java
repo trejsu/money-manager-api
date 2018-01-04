@@ -1,7 +1,6 @@
 package com.money.manager.model;
 
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,9 +13,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 
@@ -73,8 +71,8 @@ public class User {
         this.lastName = lastName;
         this.password = password;
         this.admin = admin;
-        this.wallets = ofNullable(wallets).orElse(new LinkedList<>());
-        this.budgets = ofNullable(budgets).orElse(new LinkedList<>());
-        this.savings = ofNullable(savings).orElse(new LinkedList<>());
+        this.wallets = ofNullable(wallets).orElse(new ArrayList<>());
+        this.budgets = ofNullable(budgets).orElse(new ArrayList<>());
+        this.savings = ofNullable(savings).orElse(new ArrayList<>());
     }
 }

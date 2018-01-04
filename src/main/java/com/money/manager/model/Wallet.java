@@ -12,7 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.math.BigDecimal;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Optional.ofNullable;
@@ -50,6 +50,6 @@ public class Wallet {
         this.amount = amount;
         this.currency = currency;
         this.name = name;
-        this.expenses = ofNullable(expenses).orElse(new LinkedList<>());
+        this.expenses = ofNullable(expenses).orElse(new ArrayList<>());
     }
 }
