@@ -1,6 +1,7 @@
 package com.money.manager.model;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,6 +19,7 @@ import java.io.Serializable;
 @Setter
 @Entity
 @Table(name = "CATEGORY")
+@EqualsAndHashCode
 @IdClass(Category.CategoryPK.class)
 public class Category {
 
