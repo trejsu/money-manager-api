@@ -18,6 +18,7 @@ public class ExpenseOutputDto {
     private String message;
     private Money money;
     private Category category;
+    private String date;
 
     public static ExpenseOutputDto fromExpense(Expense expense) {
         return ExpenseOutputDto.builder()
@@ -25,6 +26,7 @@ public class ExpenseOutputDto {
                 .message(expense.getMessage())
                 .money(new Money(expense.getAmount(), expense.getCurrency()))
                 .category(expense.getCategory())
+                .date(expense.getDate())
                 .build();
     }
 }
