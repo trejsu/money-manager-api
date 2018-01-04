@@ -7,8 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-import java.util.LinkedList;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,13 +15,13 @@ import java.util.LinkedList;
 @Builder
 public class WalletDto {
     private Integer id;
-    private BigDecimal amount;
+    private Money money;
     private String name;
 
     public static WalletDto fromWallet(Wallet wallet) {
         return builder()
                 .id(wallet.getId())
-                .amount(wallet.getAmount())
+                .money(new Money(wallet.getAmount(), wallet.getCurrency()))
                 .name(wallet.getName())
                 .build();
     }
@@ -31,7 +29,8 @@ public class WalletDto {
     public Wallet toWallet() {
         return Wallet.builder()
                 .id(id)
-                .amount(amount)
+                .amount(money.getAmount())
+                .currency(money.getCurrency().getCurrencyCode())
                 .name(name)
                 .build();
     }

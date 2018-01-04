@@ -69,4 +69,10 @@ public class Money implements Comparable<Money> {
             return new Money(newAmount, newCurrency);
         }
     }
+
+    public Money substract(Money other) {
+        Money converted = other.convertTo(currency);
+        BigDecimal newAmount = amount.subtract(converted.amount);
+        return new Money(newAmount, currency);
+    }
 }

@@ -34,6 +34,9 @@ public class Wallet {
     @Column(name = "amount")
     private BigDecimal amount;
 
+    @Column(name = "currency")
+    private String currency;
+
     @Column(name = "name")
     private String name;
 
@@ -42,9 +45,10 @@ public class Wallet {
     private List<Expense> expenses;
 
     @Builder
-    public Wallet(Integer id, BigDecimal amount, String name, List<Expense> expenses) {
+    public Wallet(Integer id, BigDecimal amount, String currency, String name, List<Expense> expenses) {
         this.id = id;
         this.amount = amount;
+        this.currency = currency;
         this.name = name;
         this.expenses = ofNullable(expenses).orElse(new LinkedList<>());
     }

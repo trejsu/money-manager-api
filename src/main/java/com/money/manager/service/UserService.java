@@ -15,7 +15,6 @@ import com.money.manager.dto.WalletDto;
 import com.money.manager.exception.BadRequestException;
 import com.money.manager.exception.UserNotFoundException;
 import com.money.manager.exception.WalletNotFoundException;
-import com.money.manager.factory.WalletFactory;
 import com.money.manager.model.Budget;
 import com.money.manager.model.Expense;
 import com.money.manager.model.User;
@@ -49,20 +48,19 @@ import static java.util.stream.Collectors.toMap;
 public class UserService {
 
     private final static DateTimeFormatter DATE_TIME_FORMATTER = ISO_LOCAL_DATE;
+    private final static String SUMMARY_WALLET_NAME = "wszystkie";
 
     private final UserDao userDao;
     private final WalletDao walletDao;
     private final BudgetDao budgetDao;
     private final ExpenseDao expenseDao;
-    private final WalletFactory walletFactory;
 
     @Autowired
-    public UserService(UserDao userDao, WalletDao walletDao, BudgetDao budgetDao, ExpenseDao expenseDao, WalletFactory walletFactory) {
+    public UserService(UserDao userDao, WalletDao walletDao, BudgetDao budgetDao, ExpenseDao expenseDao) {
         this.userDao = userDao;
         this.walletDao = walletDao;
         this.budgetDao = budgetDao;
         this.expenseDao = expenseDao;
-        this.walletFactory = walletFactory;
     }
 
     public List<UserDto> getUsers() {
@@ -85,7 +83,7 @@ public class UserService {
 
     public List<WalletDto> getWallets(String login) {
         User user = getUser(login);
-        List<WalletDto> wallets = new LinkedList<>(singletonList(walletFactory.getSummaryWallet(user)));
+        List<WalletDto> wallets = new LinkedList<>(singletonList(getSummaryWallet(user)));
         wallets.addAll(walletDao
                 .getAllFromUser(user)
                 .stream()
@@ -128,9 +126,16 @@ public class UserService {
         expense.setDate(LocalDate.now().format(DATE_TIME_FORMATTER));
         Integer expenseId = expenseDao.add(expense);
         wallet.getExpenses().add(expense);
-        updateAmount(wallet, expense);
+        Money newWalletAmount = getNewAmount(expenseInputDto, wallet);
+        wallet.setAmount(newWalletAmount.getAmount());
         walletDao.update(wallet);
         return expenseId;
+    }
+
+    private Money getNewAmount(ExpenseInputDto expense, Wallet wallet) {
+        Money toAdd = expense.getMoney();
+        Money current = new Money(wallet.getAmount(), wallet.getCurrency());
+        return expense.getCategory().isProfit() ? current.add(toAdd) : current.substract(toAdd);
     }
 
     public Map<String, BigDecimal> getCountedCategories(String login, Integer id, TimePeriod timePeriod) {
@@ -146,7 +151,7 @@ public class UserService {
 
     public List<BudgetOutputDto> getBudgets(String login, TimePeriod start, TimePeriod end) {
         User user = getUser(login);
-        List <ExpenseOutputDto> expenses = getAllExpenses(user, new TimePeriod(start.getStart(), end.getEnd()));
+        List<ExpenseOutputDto> expenses = getAllExpenses(user, new TimePeriod(start.getStart(), end.getEnd()));
         return user
                 .getBudgets()
                 .stream()
@@ -219,11 +224,12 @@ public class UserService {
                 .collect(toList());
     }
 
-    private void updateAmount(Wallet wallet, Expense expense) {
-        BigDecimal amount = expense.getAmount();
-        if (!expense.getCategory().isProfit()) {
-            amount = amount.negate();
-        }
-        wallet.setAmount(wallet.getAmount().add(amount));
+    private WalletDto getSummaryWallet(User user) {
+        Money money = user
+                .getWallets()
+                .stream()
+                .map(wallet -> new Money(wallet.getAmount(), wallet.getCurrency()))
+                .reduce(Money.zero(), Money::add);
+        return WalletDto.builder().id(0).money(money).name(SUMMARY_WALLET_NAME).build();
     }
 }
