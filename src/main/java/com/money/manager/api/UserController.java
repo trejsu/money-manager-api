@@ -133,7 +133,7 @@ public class UserController {
             return Budget.builder()
                     .category(category)
                     .total(total.getAmount())
-                    .currency(total.getCurrencyCode())
+                    .currency(total.getCurrency().getCurrencyCode())
                     .start(timePeriod.getStart())
                     .end(timePeriod.getEnd())
                     .build();

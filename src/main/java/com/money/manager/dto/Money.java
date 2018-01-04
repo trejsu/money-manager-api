@@ -69,9 +69,4 @@ public class Money implements Comparable<Money> {
             return new Money(newAmount, newCurrency);
         }
     }
-
-    @JsonIgnore
-    public String getCurrencyCode() {
-        return currency.getCurrencyCode();
-    }
 }
