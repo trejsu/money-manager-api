@@ -177,13 +177,12 @@ public class UserService {
         return new Summary(inflow, outflow);
     }
 
-    private BigDecimal calculateCurrent(Budget budget, List<ExpenseOutputDto> expenses) {
+    private Money calculateCurrent(Budget budget, List<ExpenseOutputDto> expenses) {
         return expenses
                 .stream()
                 .filter(isIncludedIn(budget))
                 .map(ExpenseOutputDto::getMoney)
-                .reduce(Money.zero(), Money::add)
-                .getAmount();
+                .reduce(Money.zero(), Money::add);
     }
 
     private User getUser(String login) {

@@ -3,6 +3,7 @@ package com.money.manager.api;
 import com.money.manager.dto.BudgetOutputDto;
 import com.money.manager.dto.ExpenseInputDto;
 import com.money.manager.dto.ExpenseOutputDto;
+import com.money.manager.dto.Money;
 import com.money.manager.dto.WalletDto;
 import com.money.manager.dto.UserDto;
 import com.money.manager.dto.Summary;
@@ -123,7 +124,7 @@ public class UserController {
         @NotNull
         private Category category;
         @NotNull
-        private BigDecimal total;
+        private Money total;
         @Valid
         @NotNull
         private TimePeriod timePeriod;
@@ -131,7 +132,8 @@ public class UserController {
         public Budget toBudget() {
             return Budget.builder()
                     .category(category)
-                    .total(total)
+                    .total(total.getAmount())
+                    .currency(total.getCurrencyCode())
                     .start(timePeriod.getStart())
                     .end(timePeriod.getEnd())
                     .build();

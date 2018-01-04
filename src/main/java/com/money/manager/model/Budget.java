@@ -43,6 +43,9 @@ public class Budget {
     @Column(name = "total")
     private BigDecimal total;
 
+    @Column(name = "currency")
+    private String currency;
+
     @Column(name = "start_date")
     private String start;
 

@@ -7,8 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 @Data
 @NoArgsConstructor
 @Builder
@@ -16,15 +14,15 @@ import java.math.BigDecimal;
 public class BudgetOutputDto {
     private Integer id;
     private Category category;
-    private BigDecimal total;
-    private BigDecimal current;
+    private Money total;
+    private Money current;
     private TimePeriod timePeriod;
 
-    public static BudgetOutputDto fromBudget(Budget budget, BigDecimal current) {
+    public static BudgetOutputDto fromBudget(Budget budget, Money current) {
         return builder()
                 .id(budget.getId())
                 .category(budget.getCategory())
-                .total(budget.getTotal())
+                .total(new Money(budget.getTotal(), budget.getCurrency()))
                 .current(current)
                 .timePeriod(new TimePeriod(budget.getStart(), budget.getEnd()))
                 .build();
