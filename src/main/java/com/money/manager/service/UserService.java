@@ -33,9 +33,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static com.money.manager.service.Predicates.isEligibleExpense;
+import static com.money.manager.service.Predicates.isIn;
+import static com.money.manager.service.Predicates.isIncludedIn;
+import static com.money.manager.service.Predicates.isNotProfit;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.util.Collections.singletonList;
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 
 @Service
@@ -109,9 +116,8 @@ public class UserService {
         List<ExpenseOutputDto> expenses = getExpenses(login, id, timePeriod);
         return expenses
                 .stream()
-                .filter(e -> !e.getCategory().isProfit())
-                .sorted((e1, e2) -> e2.getMoney().compareTo(e1.getMoney()))
-                .findFirst()
+                .filter(isNotProfit)
+                .max(comparing(ExpenseOutputDto::getMoney))
                 .orElse(null);
     }
 
@@ -128,16 +134,24 @@ public class UserService {
     }
 
     public Map<String, BigDecimal> getCountedCategories(String login, Integer id, TimePeriod timePeriod) {
-        return walletDao.getCountedCategoriesByWalletAndTimePeriod(login, id, timePeriod);
+        final List<ExpenseOutputDto> expenses = getExpenses(login, id, timePeriod);
+        return expenses
+                .stream()
+                .filter(isIn(timePeriod).and(isEligibleExpense))
+                .collect(groupingBy(expense -> expense.getCategory().getName()))
+                .entrySet()
+                .stream()
+                .collect(toMap(Map.Entry::getKey, e -> e.getValue().stream().map(ExpenseOutputDto::getMoney).reduce(Money.zero(), Money::add).getAmount()));
     }
 
     public List<BudgetOutputDto> getBudgets(String login, TimePeriod start, TimePeriod end) {
         User user = getUser(login);
+        List <ExpenseOutputDto> expenses = getAllExpenses(user, new TimePeriod(start.getStart(), end.getEnd()));
         return user
                 .getBudgets()
                 .stream()
-                .filter(budget -> start.containsDate(budget.getStart()) && end.containsDate(budget.getEnd()))
-                .map(budget -> BudgetOutputDto.fromBudget(budget, calculateCurrent(login, budget)))
+                .filter(isIn(start, end))
+                .map(budget -> BudgetOutputDto.fromBudget(budget, calculateCurrent(budget, expenses)))
                 .collect(toList());
     }
 
@@ -163,12 +177,13 @@ public class UserService {
         return new Summary(inflow, outflow);
     }
 
-    private BigDecimal calculateCurrent(String login, Budget budget) {
-        return expenseDao.getSummaryByUserTimePeriodAndCategory(
-                login,
-                new TimePeriod(budget.getStart(), budget.getEnd()),
-                budget.getCategory()
-        );
+    private BigDecimal calculateCurrent(Budget budget, List<ExpenseOutputDto> expenses) {
+        return expenses
+                .stream()
+                .filter(isIncludedIn(budget))
+                .map(ExpenseOutputDto::getMoney)
+                .reduce(Money.zero(), Money::add)
+                .getAmount();
     }
 
     private User getUser(String login) {
@@ -189,8 +204,8 @@ public class UserService {
         return wallet
                 .getExpenses()
                 .stream()
-                .filter(expense -> timePeriod.containsDate(expense.getDate()))
                 .map(ExpenseOutputDto::fromExpense)
+                .filter(isIn(timePeriod))
                 .collect(toList());
     }
 
@@ -200,8 +215,8 @@ public class UserService {
                 .stream()
                 .map(Wallet::getExpenses)
                 .flatMap(List::stream)
-                .filter(expense -> timePeriod.containsDate(expense.getDate()))
                 .map(ExpenseOutputDto::fromExpense)
+                .filter(isIn(timePeriod))
                 .collect(toList());
     }
 
