@@ -7,9 +7,9 @@ import com.money.manager.db.dao.WalletDao;
 import com.money.manager.dto.BudgetOutputDto;
 import com.money.manager.dto.ExpenseInputDto;
 import com.money.manager.dto.ExpenseOutputDto;
-import com.money.manager.dto.Money;
+import com.money.manager.model.money.Money;
 import com.money.manager.dto.Summary;
-import com.money.manager.dto.TimePeriod;
+import com.money.manager.dto.DateRange;
 import com.money.manager.dto.UserDto;
 import com.money.manager.dto.WalletDto;
 import com.money.manager.exception.BadRequestException;
@@ -27,8 +27,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +37,6 @@ import static com.money.manager.service.Predicates.isIn;
 import static com.money.manager.service.Predicates.isIncludedIn;
 import static com.money.manager.service.Predicates.isNotProfit;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-import static java.util.Collections.singletonList;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
@@ -83,7 +82,8 @@ public class UserService {
 
     public List<WalletDto> getWallets(String login) {
         User user = getUser(login);
-        List<WalletDto> wallets = new LinkedList<>(singletonList(getSummaryWallet(user)));
+        List<WalletDto> wallets = new ArrayList<>();
+        wallets.add(getSummaryWallet(user));
         wallets.addAll(walletDao
                 .getAllFromUser(user)
                 .stream()
@@ -101,17 +101,17 @@ public class UserService {
         return id;
     }
 
-    public Summary getSummary(String login, Integer id, TimePeriod timePeriod) {
-        return calculateSummary(getExpenses(login, id, timePeriod));
+    public Summary getSummary(String login, Integer id, DateRange dateRange) {
+        return calculateSummary(getExpenses(login, id, dateRange));
     }
 
-    public List<ExpenseOutputDto> getExpenses(String login, Integer id, TimePeriod timePeriod) {
+    public List<ExpenseOutputDto> getExpenses(String login, Integer id, DateRange dateRange) {
         User user = getUser(login);
-        return id == 0 ? getAllExpenses(user, timePeriod) : getExpensesFromWallet(user, id, timePeriod);
+        return id == 0 ? getAllExpenses(user, dateRange) : getExpensesFromWallet(user, id, dateRange);
     }
 
-    public ExpenseOutputDto getHighestExpense(String login, Integer id, TimePeriod timePeriod) {
-        List<ExpenseOutputDto> expenses = getExpenses(login, id, timePeriod);
+    public ExpenseOutputDto getHighestExpense(String login, Integer id, DateRange dateRange) {
+        List<ExpenseOutputDto> expenses = getExpenses(login, id, dateRange);
         return expenses
                 .stream()
                 .filter(isNotProfit)
@@ -138,20 +138,20 @@ public class UserService {
         return expense.getCategory().isProfit() ? current.add(toAdd) : current.substract(toAdd);
     }
 
-    public Map<String, BigDecimal> getCountedCategories(String login, Integer id, TimePeriod timePeriod) {
-        final List<ExpenseOutputDto> expenses = getExpenses(login, id, timePeriod);
+    public Map<String, BigDecimal> getCountedCategories(String login, Integer id, DateRange dateRange) {
+        final List<ExpenseOutputDto> expenses = getExpenses(login, id, dateRange);
         return expenses
                 .stream()
-                .filter(isIn(timePeriod).and(isEligibleExpense))
+                .filter(isIn(dateRange).and(isEligibleExpense))
                 .collect(groupingBy(expense -> expense.getCategory().getName()))
                 .entrySet()
                 .stream()
-                .collect(toMap(Map.Entry::getKey, e -> e.getValue().stream().map(ExpenseOutputDto::getMoney).reduce(Money.zero(), Money::add).getAmount()));
+                .collect(toMap(Map.Entry::getKey, e -> e.getValue().stream().map(ExpenseOutputDto::getMoney).reduce(Money.ZERO, Money::add).getAmount()));
     }
 
-    public List<BudgetOutputDto> getBudgets(String login, TimePeriod start, TimePeriod end) {
+    public List<BudgetOutputDto> getBudgets(String login, DateRange start, DateRange end) {
         User user = getUser(login);
-        List<ExpenseOutputDto> expenses = getAllExpenses(user, new TimePeriod(start.getStart(), end.getEnd()));
+        List<ExpenseOutputDto> expenses = getAllExpenses(user, new DateRange(start.getStart(), end.getEnd()));
         return user
                 .getBudgets()
                 .stream()
@@ -169,8 +169,8 @@ public class UserService {
     }
 
     private Summary calculateSummary(List<ExpenseOutputDto> expenses) {
-        Money inflow = Money.zero();
-        Money outflow = Money.zero();
+        Money inflow = Money.ZERO;
+        Money outflow = Money.ZERO;
         for (ExpenseOutputDto expense : expenses) {
             Money money = expense.getMoney();
             if (expense.getCategory().isProfit()) {
@@ -187,7 +187,7 @@ public class UserService {
                 .stream()
                 .filter(isIncludedIn(budget))
                 .map(ExpenseOutputDto::getMoney)
-                .reduce(Money.zero(), Money::add);
+                .reduce(Money.ZERO, Money::add);
     }
 
     private User getUser(String login) {
@@ -203,24 +203,24 @@ public class UserService {
                 .orElseThrow(() -> new WalletNotFoundException(""));
     }
 
-    private List<ExpenseOutputDto> getExpensesFromWallet(User user, Integer id, TimePeriod timePeriod) {
+    private List<ExpenseOutputDto> getExpensesFromWallet(User user, Integer id, DateRange dateRange) {
         Wallet wallet = getWallet(id, user);
         return wallet
                 .getExpenses()
                 .stream()
                 .map(ExpenseOutputDto::fromExpense)
-                .filter(isIn(timePeriod))
+                .filter(isIn(dateRange))
                 .collect(toList());
     }
 
-    private List<ExpenseOutputDto> getAllExpenses(User user, TimePeriod timePeriod) {
+    private List<ExpenseOutputDto> getAllExpenses(User user, DateRange dateRange) {
         return user
                 .getWallets()
                 .stream()
                 .map(Wallet::getExpenses)
                 .flatMap(List::stream)
                 .map(ExpenseOutputDto::fromExpense)
-                .filter(isIn(timePeriod))
+                .filter(isIn(dateRange))
                 .collect(toList());
     }
 
@@ -229,7 +229,7 @@ public class UserService {
                 .getWallets()
                 .stream()
                 .map(wallet -> new Money(wallet.getAmount(), wallet.getCurrency()))
-                .reduce(Money.zero(), Money::add);
+                .reduce(Money.ZERO, Money::add);
         return WalletDto.builder().id(0).money(money).name(SUMMARY_WALLET_NAME).build();
     }
 }

@@ -3,11 +3,11 @@ package com.money.manager.api;
 import com.money.manager.dto.BudgetOutputDto;
 import com.money.manager.dto.ExpenseInputDto;
 import com.money.manager.dto.ExpenseOutputDto;
-import com.money.manager.dto.Money;
+import com.money.manager.model.money.Money;
 import com.money.manager.dto.WalletDto;
 import com.money.manager.dto.UserDto;
 import com.money.manager.dto.Summary;
-import com.money.manager.dto.TimePeriod;
+import com.money.manager.dto.DateRange;
 import com.money.manager.model.Budget;
 import com.money.manager.model.Category;
 import com.money.manager.service.UserService;
@@ -69,7 +69,7 @@ public class UserController {
                               @PathVariable("id") Integer id,
                               @RequestParam(name = "start", required = false) String start,
                               @RequestParam(name = "end", required = false) String end) {
-        return userService.getSummary(login, id, new TimePeriod(start, end));
+        return userService.getSummary(login, id, new DateRange(start, end));
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/expenses", produces = APPLICATION_JSON_VALUE)
@@ -77,7 +77,7 @@ public class UserController {
                                               @PathVariable("id") Integer id,
                                               @RequestParam(name = "start", required = false) String start,
                                               @RequestParam(name = "end", required = false) String end) {
-        return userService.getExpenses(login, id, new TimePeriod(start, end));
+        return userService.getExpenses(login, id, new DateRange(start, end));
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/highest_expense", produces = APPLICATION_JSON_VALUE)
@@ -85,7 +85,7 @@ public class UserController {
                                      @PathVariable("id") Integer id,
                                      @RequestParam(name = "start", required = false) String start,
                                      @RequestParam(name = "end", required = false) String end) {
-        return userService.getHighestExpense(login, id, new TimePeriod(start, end));
+        return userService.getHighestExpense(login, id, new DateRange(start, end));
     }
 
     @PostMapping(value = "/{login}/wallets/{id}/expenses", consumes = APPLICATION_JSON_VALUE)
@@ -100,7 +100,7 @@ public class UserController {
                                                         @PathVariable("id") Integer id,
                                                         @RequestParam(name = "start", required = false) String start,
                                                         @RequestParam(name = "end", required = false) String end) {
-        return userService.getCountedCategories(login, id, new TimePeriod(start, end));
+        return userService.getCountedCategories(login, id, new DateRange(start, end));
     }
 
     @GetMapping(value = "/{login}/budgets", produces = APPLICATION_JSON_VALUE)
@@ -109,7 +109,7 @@ public class UserController {
                                             @RequestParam(name = "start_max", required = false) String startMax,
                                             @RequestParam(name = "end_min", required = false) String endMin,
                                             @RequestParam(name = "end_max", required = false) String endMax) {
-        return userService.getBudgets(login, new TimePeriod(startMin, startMax), new TimePeriod(endMin, endMax));
+        return userService.getBudgets(login, new DateRange(startMin, startMax), new DateRange(endMin, endMax));
     }
 
 
@@ -127,15 +127,15 @@ public class UserController {
         private Money total;
         @Valid
         @NotNull
-        private TimePeriod timePeriod;
+        private DateRange dateRange;
 
         public Budget toBudget() {
             return Budget.builder()
                     .category(category)
                     .total(total.getAmount())
                     .currency(total.getCurrency().getCurrencyCode())
-                    .start(timePeriod.getStart())
-                    .end(timePeriod.getEnd())
+                    .start(dateRange.getStart())
+                    .end(dateRange.getEnd())
                     .build();
         }
     }

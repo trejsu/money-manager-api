@@ -2,6 +2,7 @@ package com.money.manager.dto;
 
 import com.money.manager.model.Budget;
 import com.money.manager.model.Category;
+import com.money.manager.model.money.Money;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +17,7 @@ public class BudgetOutputDto {
     private Category category;
     private Money total;
     private Money current;
-    private TimePeriod timePeriod;
+    private DateRange dateRange;
 
     public static BudgetOutputDto fromBudget(Budget budget, Money current) {
         return builder()
@@ -24,7 +25,7 @@ public class BudgetOutputDto {
                 .category(budget.getCategory())
                 .total(new Money(budget.getTotal(), budget.getCurrency()))
                 .current(current)
-                .timePeriod(new TimePeriod(budget.getStart(), budget.getEnd()))
+                .dateRange(new DateRange(budget.getStart(), budget.getEnd()))
                 .build();
     }
 }

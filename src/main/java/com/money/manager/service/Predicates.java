@@ -1,7 +1,7 @@
 package com.money.manager.service;
 
 import com.money.manager.dto.ExpenseOutputDto;
-import com.money.manager.dto.TimePeriod;
+import com.money.manager.dto.DateRange;
 import com.money.manager.model.Budget;
 
 import java.util.function.Predicate;
@@ -16,17 +16,17 @@ class Predicates {
     final static Predicate<ExpenseOutputDto> isNotTransfer = expense -> !expense.getCategory().getName().equals(TRANSFER_CATEGORY);
     final static Predicate<ExpenseOutputDto> isEligibleExpense = isNotTransfer.and(isNotProfit);
 
-    static Predicate<ExpenseOutputDto> isIn(TimePeriod timePeriod) {
-        return expense -> timePeriod.containsDate(expense.getDate());
+    static Predicate<ExpenseOutputDto> isIn(DateRange dateRange) {
+        return expense -> dateRange.containsDate(expense.getDate());
     }
 
-    static Predicate<Budget> isIn(TimePeriod start, TimePeriod end) {
+    static Predicate<Budget> isIn(DateRange start, DateRange end) {
         return budget -> start.containsDate(budget.getStart()) && end.containsDate(budget.getEnd());
     }
 
     static Predicate<ExpenseOutputDto> isIncludedIn(Budget budget) {
-        TimePeriod timePeriod = new TimePeriod(budget.getStart(), budget.getEnd());
-        return matchesCategoryOf(budget).and(isIn(timePeriod));
+        DateRange dateRange = new DateRange(budget.getStart(), budget.getEnd());
+        return matchesCategoryOf(budget).and(isIn(dateRange));
     }
 
     static Predicate<ExpenseOutputDto> matchesCategoryOf(Budget budget) {

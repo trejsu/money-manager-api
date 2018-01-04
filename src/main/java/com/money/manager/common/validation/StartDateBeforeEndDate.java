@@ -1,7 +1,7 @@
 package com.money.manager.common.validation;
 
 
-import com.money.manager.dto.TimePeriod;
+import com.money.manager.dto.DateRange;
 
 import javax.validation.Constraint;
 import javax.validation.ConstraintValidator;
@@ -26,7 +26,7 @@ public @interface StartDateBeforeEndDate {
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 
-    class StartDateBeforeEndDateValidator implements ConstraintValidator<StartDateBeforeEndDate, TimePeriod> {
+    class StartDateBeforeEndDateValidator implements ConstraintValidator<StartDateBeforeEndDate, DateRange> {
 
         private final static DateTimeFormatter DATE_TIME_FORMATTER = ISO_LOCAL_DATE;
 
@@ -36,9 +36,9 @@ public @interface StartDateBeforeEndDate {
         }
 
         @Override
-        public boolean isValid(TimePeriod timePeriod, ConstraintValidatorContext constraintValidatorContext) {
-            LocalDate start = LocalDate.parse(timePeriod.getStart(), DATE_TIME_FORMATTER);
-            LocalDate end = LocalDate.parse(timePeriod.getEnd(), DATE_TIME_FORMATTER);
+        public boolean isValid(DateRange dateRange, ConstraintValidatorContext constraintValidatorContext) {
+            LocalDate start = LocalDate.parse(dateRange.getStart(), DATE_TIME_FORMATTER);
+            LocalDate end = LocalDate.parse(dateRange.getEnd(), DATE_TIME_FORMATTER);
             return start.isBefore(end);
         }
     }
