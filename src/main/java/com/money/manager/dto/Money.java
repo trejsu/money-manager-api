@@ -37,7 +37,8 @@ public class Money implements Comparable<Money> {
 
     @Override
     public int compareTo(Money other) {
-        return 0;
+        Money converted = other.convertTo(currency);
+        return amount.compareTo(converted.amount);
     }
 
     public static Money zero() {

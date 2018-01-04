@@ -9,7 +9,6 @@ import com.money.manager.dto.Summary;
 import com.money.manager.dto.TimePeriod;
 import com.money.manager.model.Budget;
 import com.money.manager.model.Category;
-import com.money.manager.model.Expense;
 import com.money.manager.service.UserService;
 import lombok.Data;
 import lombok.NoArgsConstructor;
