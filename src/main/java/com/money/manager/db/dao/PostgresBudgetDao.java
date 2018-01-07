@@ -1,6 +1,6 @@
 package com.money.manager.db.dao;
 
-import com.money.manager.db.PostgresUtil;
+import com.money.manager.db.Postgres;
 import com.money.manager.model.Budget;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class PostgresBudgetDao implements BudgetDao {
 
-    private final PostgresUtil postgres;
+    private final Postgres postgres;
 
     @Autowired
-    public PostgresBudgetDao(PostgresUtil postgres) {
+    public PostgresBudgetDao(Postgres postgres) {
         this.postgres = postgres;
     }
 

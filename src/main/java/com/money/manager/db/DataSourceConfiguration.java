@@ -16,9 +16,9 @@ public class DataSourceConfiguration {
     }
 
     @Bean
-    public PostgresUtil postgres(@Value("${postgres.url}") String url,
-                                 @Value("${postgres.user}") String username,
-                                 @Value("${postgres.password}") String password) {
-        return new PostgresUtil(url, username, password);
+    public Postgres postgres(@Value("${postgres.url}") String url,
+                             @Value("${postgres.user}") String username,
+                             @Value("${postgres.password}") String password) {
+        return new Postgres(url, username, password);
     }
 }

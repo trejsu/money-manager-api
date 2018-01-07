@@ -12,10 +12,6 @@ public class PasswordRegisterServlet extends RegisterServlet {
 
     private static Hasher hasher = new PBKDF2Hasher();
 
-    public void setHasher(Hasher newHasher) {
-        hasher = newHasher;
-    }
-
     @Override
     @SneakyThrows
     protected void setup(UserInputDto userInputDto) {

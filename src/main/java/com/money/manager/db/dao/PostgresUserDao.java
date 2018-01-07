@@ -1,6 +1,6 @@
 package com.money.manager.db.dao;
 
-import com.money.manager.db.PostgresUtil;
+import com.money.manager.db.Postgres;
 import com.money.manager.model.User;
 import com.money.manager.exception.LoginAlreadyTakenException;
 import com.money.manager.exception.UserNotFoundException;
@@ -14,10 +14,10 @@ import java.util.Optional;
 @Service
 public class PostgresUserDao implements UserDao {
 
-    private final PostgresUtil postgres;
+    private final Postgres postgres;
 
     @Autowired
-    public PostgresUserDao(PostgresUtil postgres) {
+    public PostgresUserDao(Postgres postgres) {
         this.postgres = postgres;
     }
 

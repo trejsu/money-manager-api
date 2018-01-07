@@ -1,4 +1,4 @@
-package com.money.manager.auth;
+package com.money.manager.auth.authentication;
 
 import com.money.manager.model.User;
 

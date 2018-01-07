@@ -1,4 +1,4 @@
-package com.money.manager.auth;
+package com.money.manager.auth.authentication;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

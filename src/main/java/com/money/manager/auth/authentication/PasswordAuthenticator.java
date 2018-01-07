@@ -1,4 +1,4 @@
-package com.money.manager.auth;
+package com.money.manager.auth.authentication;
 
 import com.money.manager.auth.hash.Hasher;
 import com.money.manager.auth.hash.PBKDF2Hasher;

@@ -1,8 +1,8 @@
 package com.money.manager.auth.login;
 
-import com.money.manager.auth.Authenticator;
-import com.money.manager.auth.PasswordAuthenticator;
-import com.money.manager.auth.AuthenticationData;
+import com.money.manager.auth.authentication.Authenticator;
+import com.money.manager.auth.authentication.PasswordAuthenticator;
+import com.money.manager.auth.authentication.AuthenticationData;
 import com.money.manager.db.dao.UserDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;

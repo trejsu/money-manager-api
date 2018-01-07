@@ -15,15 +15,15 @@ import org.hibernate.cfg.Configuration;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class PostgresUtil {
+public class Postgres {
 
     private static SessionFactory sessionFactory;
 
-    private String url;
-    private String username;
-    private String password;
+    private final String url;
+    private final String username;
+    private final String password;
 
-    public PostgresUtil(String url, String username, String password) {
+    public Postgres(String url, String username, String password) {
         this.url = url;
         this.username = username;
         this.password = password;

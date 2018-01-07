@@ -1,6 +1,6 @@
 package com.money.manager.db.dao;
 
-import com.money.manager.db.PostgresUtil;
+import com.money.manager.db.Postgres;
 import com.money.manager.model.User;
 import com.money.manager.model.Wallet;
 import com.money.manager.exception.CustomException;
@@ -14,10 +14,10 @@ import static java.util.Comparator.comparingInt;
 @Service
 public class PostgresWalletDao implements WalletDao {
 
-    private final PostgresUtil postgres;
+    private final Postgres postgres;
 
     @Autowired
-    public PostgresWalletDao(PostgresUtil postgres) {
+    public PostgresWalletDao(Postgres postgres) {
         this.postgres = postgres;
     }
 
