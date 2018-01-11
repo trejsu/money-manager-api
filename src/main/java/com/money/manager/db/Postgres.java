@@ -12,8 +12,9 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 
-import java.util.Optional;
 import java.util.function.Function;
+
+import static java.util.Optional.ofNullable;
 
 public class Postgres {
 
@@ -62,7 +63,7 @@ public class Postgres {
             returned = query.apply(session);
             transaction.commit();
         } catch (HibernateException e) {
-            Optional.ofNullable(transaction).ifPresent(Transaction::rollback);
+            ofNullable(transaction).ifPresent(Transaction::rollback);
             throw e;
         }
         return returned;

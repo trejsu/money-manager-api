@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
+import static java.util.Optional.ofNullable;
+
 public class AuthenticationFilter implements Filter {
 
     @Override
@@ -27,18 +29,23 @@ public class AuthenticationFilter implements Filter {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
         HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
 
-        if (authenticated(httpServletRequest)) {
+        if (isOptions(httpServletRequest) || authenticated(httpServletRequest)) {
             chain.doFilter(servletRequest, servletResponse);
         } else {
             httpServletResponse.sendError(401);
         }
     }
 
+    private boolean isOptions(HttpServletRequest httpServletRequest) {
+        String method = httpServletRequest.getMethod();
+        return method.equalsIgnoreCase("OPTIONS");
+    }
+
     private boolean authenticated(HttpServletRequest httpServletRequest) {
         HttpSession session = httpServletRequest.getSession(false);
-        String method = httpServletRequest.getMethod();
-        return method.equalsIgnoreCase("OPTIONS") ||
-                (session != null && session.getAttribute("user") != null);
+        return ofNullable(session)
+                .map(s -> ofNullable(s.getAttribute("user")).isPresent())
+                .orElse(false);
     }
 
     @Override

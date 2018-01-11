@@ -14,6 +14,9 @@ import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.Optional;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+
 public class GoogleAuthenticator implements Authenticator {
 
     private static final String CLIENT_ID = "434476122553-nsqfrvsmc4g2ca8277epe8edult0omul.apps.googleusercontent.com";
@@ -35,11 +38,10 @@ public class GoogleAuthenticator implements Authenticator {
     }
 
     public Optional<User> verify() {
-        GoogleIdToken verifiedToken = getVerifiedToken();
-        if (verifiedToken == null) {
-            return Optional.empty();
-        }
-        return userDao.get(getLogin(verifiedToken));
+        Optional<GoogleIdToken> verifiedToken = getVerifiedToken();
+        return verifiedToken
+                .map(token -> userDao.get(getLogin(token)))
+                .orElse(empty());
     }
 
     private String getLogin(GoogleIdToken verifiedToken) {
@@ -48,11 +50,11 @@ public class GoogleAuthenticator implements Authenticator {
         return email.split("@")[0];
     }
 
-    private GoogleIdToken getVerifiedToken() {
+    private Optional<GoogleIdToken> getVerifiedToken() {
         try {
-            return verifier.verify(token);
+            return of(verifier.verify(token));
         } catch (GeneralSecurityException | IOException e) {
-            return null;
+            return empty();
         }
     }
 }

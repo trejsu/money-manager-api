@@ -14,6 +14,7 @@ import javax.servlet.http.HttpSession;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static java.util.Optional.ofNullable;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
@@ -42,17 +43,20 @@ public class LoggedInServlet {
         );
     }
 
-    private <T> ResponseEntity<T> checkSession(
-            HttpServletRequest request,
-            Function<HttpSession, ResponseEntity<T>> onSuccess,
-            Supplier<ResponseEntity<T>> onFailure
-    ) {
+    private <T> ResponseEntity<T> checkSession(HttpServletRequest request,
+                                               Function<HttpSession, ResponseEntity<T>> onSuccess,
+                                               Supplier<ResponseEntity<T>> onFailure) {
         HttpSession session = request.getSession(false);
-        boolean loggedIn = session != null && session.getAttribute("user") != null;
-        if (loggedIn) {
+        if (isLoggedIn(session)) {
             return onSuccess.apply(session);
         } else {
             return onFailure.get();
         }
+    }
+
+    private boolean isLoggedIn(HttpSession session) {
+        return ofNullable(session)
+                .map(s -> ofNullable(s.getAttribute("user")).isPresent())
+                .orElse(false);
     }
 }
