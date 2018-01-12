@@ -14,6 +14,7 @@ import com.money.manager.service.UserService;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,7 +50,7 @@ public class UserController {
         return userService.getUsers();
     }
 
-    @PutMapping(value = "/{login}", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{login}", consumes = APPLICATION_JSON_VALUE)
     public <T> void updateUser(@PathVariable("login") String login, @RequestParam("field") String field, @RequestBody LinkedHashMap<String, T> value) {
         userService.updateUser(login, field, value);
     }
@@ -93,6 +94,13 @@ public class UserController {
                               @PathVariable("id") Integer id,
                               @RequestBody ExpenseInputDto expense) {
         return userService.addExpense(login, id, expense);
+    }
+
+    @DeleteMapping(value = "/{login}/wallets/{wallet_id}/expenses/{expense_id}")
+    public void deleteExpense(@PathVariable("login") String login,
+                              @PathVariable("wallet_id") Integer wallet_id,
+                              @PathVariable("expense_id") Integer expense_id) {
+        userService.deleteExpense(login, wallet_id, expense_id);
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/counted_categories", produces = APPLICATION_JSON_VALUE)

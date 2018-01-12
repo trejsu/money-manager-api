@@ -7,6 +7,7 @@ import com.money.manager.db.dao.WalletDao;
 import com.money.manager.dto.BudgetOutputDto;
 import com.money.manager.dto.ExpenseInputDto;
 import com.money.manager.dto.ExpenseOutputDto;
+import com.money.manager.exception.ExpenseNotFoundException;
 import com.money.manager.model.money.Money;
 import com.money.manager.dto.Summary;
 import com.money.manager.dto.DateRange;
@@ -32,6 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.money.manager.service.Predicates.hasId;
 import static com.money.manager.service.Predicates.isEligibleExpense;
 import static com.money.manager.service.Predicates.isIn;
 import static com.money.manager.service.Predicates.isIncludedIn;
@@ -168,6 +170,16 @@ public class UserService {
         return id;
     }
 
+    public void deleteExpense(String login, Integer wallet_id, Integer expense_id) {
+        User user = getUser(login);
+        Wallet wallet = getWallet(wallet_id, user);
+        boolean deleted = wallet.getExpenses().removeIf(hasId(expense_id));
+        if (!deleted) {
+            throw new ExpenseNotFoundException("");
+        }
+        walletDao.update(wallet);
+    }
+
     private Summary calculateSummary(List<ExpenseOutputDto> expenses) {
         Money inflow = Money.ZERO;
         Money outflow = Money.ZERO;
@@ -232,4 +244,6 @@ public class UserService {
                 .reduce(Money.ZERO, Money::add);
         return WalletDto.builder().id(0).money(money).name(SUMMARY_WALLET_NAME).build();
     }
+
+
 }

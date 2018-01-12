@@ -3,6 +3,7 @@ package com.money.manager.service;
 import com.money.manager.dto.ExpenseOutputDto;
 import com.money.manager.dto.DateRange;
 import com.money.manager.model.Budget;
+import com.money.manager.model.Expense;
 
 import java.util.function.Predicate;
 
@@ -31,5 +32,9 @@ class Predicates {
 
     static Predicate<ExpenseOutputDto> matchesCategoryOf(Budget budget) {
         return expense -> expense.getCategory().equals(budget.getCategory());
+    }
+
+    static Predicate<Expense> hasId(Integer id) {
+        return expense -> expense.getId().equals(id);
     }
 }
