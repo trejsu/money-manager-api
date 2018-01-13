@@ -33,6 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.money.manager.dto.ExpenseOutputDto.fromExpense;
 import static com.money.manager.service.Predicates.hasId;
 import static com.money.manager.service.Predicates.isEligibleExpense;
 import static com.money.manager.service.Predicates.isIn;
@@ -128,16 +129,10 @@ public class UserService {
         expense.setDate(LocalDate.now().format(DATE_TIME_FORMATTER));
         Integer expenseId = expenseDao.add(expense);
         wallet.getExpenses().add(expense);
-        Money newWalletAmount = getNewAmount(expenseInputDto, wallet);
+        Money newWalletAmount = getNewAmountAfterAdd(expenseInputDto, wallet);
         wallet.setAmount(newWalletAmount.getAmount());
         walletDao.update(wallet);
         return expenseId;
-    }
-
-    private Money getNewAmount(ExpenseInputDto expense, Wallet wallet) {
-        Money toAdd = expense.getMoney();
-        Money current = new Money(wallet.getAmount(), wallet.getCurrency());
-        return expense.getCategory().isProfit() ? current.add(toAdd) : current.substract(toAdd);
     }
 
     public Map<String, BigDecimal> getCountedCategories(String login, Integer id, DateRange dateRange) {
@@ -173,11 +168,24 @@ public class UserService {
     public void deleteExpense(String login, Integer wallet_id, Integer expense_id) {
         User user = getUser(login);
         Wallet wallet = getWallet(wallet_id, user);
-        boolean deleted = wallet.getExpenses().removeIf(hasId(expense_id));
-        if (!deleted) {
-            throw new ExpenseNotFoundException("");
-        }
+        final List<Expense> expenses = wallet.getExpenses();
+        Expense toDelete = expenses.stream().filter(hasId(expense_id)).findFirst().orElseThrow(() -> new ExpenseNotFoundException(""));
+        expenses.remove(toDelete);
+        Money newWalletAmount = getNewAmountAfterExpenseDelete(fromExpense(toDelete), wallet);
+        wallet.setAmount(newWalletAmount.getAmount());
         walletDao.update(wallet);
+    }
+
+    private Money getNewAmountAfterExpenseDelete(ExpenseOutputDto toDelete, Wallet wallet) {
+        Money toSub = toDelete.getMoney();
+        Money current = new Money(wallet.getAmount(), wallet.getCurrency());
+        return toDelete.getCategory().isProfit() ? current.substract(toSub) : current.add(toSub);
+    }
+
+    private Money getNewAmountAfterAdd(ExpenseInputDto expense, Wallet wallet) {
+        Money toAdd = expense.getMoney();
+        Money current = new Money(wallet.getAmount(), wallet.getCurrency());
+        return expense.getCategory().isProfit() ? current.add(toAdd) : current.substract(toAdd);
     }
 
     private Summary calculateSummary(List<ExpenseOutputDto> expenses) {
