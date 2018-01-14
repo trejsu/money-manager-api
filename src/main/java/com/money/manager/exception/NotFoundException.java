@@ -1,7 +1,14 @@
 package com.money.manager.exception;
 
-public abstract class NotFoundException extends RuntimeException {
-    public NotFoundException(String errorMessage) {
-        super(errorMessage);
+import org.springframework.http.ResponseEntity;
+
+public abstract class NotFoundException extends ErrorResponseException {
+
+    NotFoundException(String problem, String solution) {
+        super(problem, solution);
+    }
+
+    public ResponseEntity<Problem> getResponseEntity() {
+        return ResponseEntity.status(404).body(problem);
     }
 }

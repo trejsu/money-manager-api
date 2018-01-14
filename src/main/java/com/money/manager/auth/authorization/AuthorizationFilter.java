@@ -28,7 +28,7 @@ public abstract class AuthorizationFilter implements Filter {
         if (method.equalsIgnoreCase("OPTIONS") || authorized(session, httpServletRequest)) {
             chain.doFilter(servletRequest, servletResponse);
         } else {
-            httpServletResponse.setStatus(403);
+            httpServletResponse.sendError(403, "You do not have access to this resource");
         }
     }
 

@@ -21,9 +21,9 @@ public class PostgresExpenseDao implements ExpenseDao {
     }
 
     @Override
-    public void remove(Integer id) {
+    public void remove(Expense toDelete) {
         postgres.executeQuery(session -> {
-            session.remove(id);
+            session.remove(toDelete);
             return true;
         });
     }

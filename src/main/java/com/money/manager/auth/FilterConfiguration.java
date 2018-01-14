@@ -18,6 +18,7 @@ public class FilterConfiguration {
         FilterRegistrationBean registration = new FilterRegistrationBean();
         registration.setFilter(adminAccessFilter());
         registration.addUrlPatterns("/admin");
+        registration.addUrlPatterns("/resources/users");
         registration.setName("adminAccessFilter");
         registration.setOrder(1);
         return registration;

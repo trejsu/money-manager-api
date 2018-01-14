@@ -18,7 +18,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public abstract class LoginServlet {
 
-    @PostMapping(consumes = APPLICATION_JSON_VALUE)
+    @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<?> login(@RequestBody @Valid AuthenticationData authenticationData, HttpServletRequest request) throws InvalidKeySpecException, NoSuchAlgorithmException {
         Authenticator authenticator = getAuthenticator(authenticationData);
         Optional<User> userOptional;
@@ -31,7 +31,7 @@ public abstract class LoginServlet {
             request.getSession().setAttribute("user", userOptional.get());
             return ResponseEntity.ok().build();
         } else {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(401).body("{\"error\":\"Provided credentials are incorrect. Try again.\"}");
         }
     }
 

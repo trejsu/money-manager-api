@@ -170,8 +170,7 @@ public class UserService {
         User user = getUser(login);
         Wallet wallet = walletId == 0 ? getWalletByExpenseId(expenseId, user) : getWallet(walletId, user);
         final List<Expense> expenses = wallet.getExpenses();
-        Expense toDelete = expenses.stream().filter(hasId(expenseId)).findFirst().orElseThrow(() -> new ExpenseNotFoundException(""));
-        expenseDao.remove(expenseId);
+        Expense toDelete = expenses.stream().filter(hasId(expenseId)).findFirst().orElseThrow(() -> new ExpenseNotFoundException(expenseId));
         expenses.remove(toDelete);
         Money newWalletAmount = getNewAmountAfterExpenseDelete(fromExpense(toDelete), wallet);
         wallet.setAmount(newWalletAmount.getAmount());
@@ -183,7 +182,7 @@ public class UserService {
                 .stream()
                 .filter(containsExpenseWithId(expenseId))
                 .findFirst()
-                .orElseThrow(() -> new WalletNotFoundException(""));
+                .orElseThrow(() -> new ExpenseNotFoundException(expenseId));
     }
 
     private Money getNewAmountAfterExpenseDelete(ExpenseOutputDto toDelete, Wallet wallet) {
@@ -221,7 +220,7 @@ public class UserService {
     }
 
     private User getUser(String login) {
-        return userDao.get(login).orElseThrow(() -> new UserNotFoundException(""));
+        return userDao.get(login).orElseThrow(() -> new UserNotFoundException(login));
     }
 
     private Wallet getWallet(Integer id, User user) {
@@ -230,7 +229,7 @@ public class UserService {
                 .stream()
                 .filter(w -> w.getId().equals(id))
                 .findFirst()
-                .orElseThrow(() -> new WalletNotFoundException(""));
+                .orElseThrow(() -> new WalletNotFoundException(id));
     }
 
     private List<ExpenseOutputDto> getExpensesFromWallet(User user, Integer id, DateRange dateRange) {

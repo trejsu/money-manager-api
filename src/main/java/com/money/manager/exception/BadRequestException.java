@@ -2,13 +2,10 @@ package com.money.manager.exception;
 
 import org.springframework.http.ResponseEntity;
 
-public abstract class BadRequestException extends RuntimeException {
-
-    private Problem problem;
+public abstract class BadRequestException extends ErrorResponseException {
 
     BadRequestException(String problem, String solution) {
-        super(problem);
-        this.problem = new Problem(problem, solution);
+        super(problem, solution);
     }
 
     public ResponseEntity<Problem> getResponseEntity() {
