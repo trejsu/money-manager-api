@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -19,7 +21,7 @@ public class ExpenseOutputDto {
     private String message;
     private Money money;
     private Category category;
-    private String date;
+    private LocalDate date;
 
     public static ExpenseOutputDto fromExpense(Expense expense) {
         return ExpenseOutputDto.builder()
@@ -27,7 +29,7 @@ public class ExpenseOutputDto {
                 .message(expense.getMessage())
                 .money(new Money(expense.getAmount(), expense.getCurrency()))
                 .category(expense.getCategory())
-                .date(expense.getDate())
+                .date(LocalDate.parse(expense.getDate()))
                 .build();
     }
 }

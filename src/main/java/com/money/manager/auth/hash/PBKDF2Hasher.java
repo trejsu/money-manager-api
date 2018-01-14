@@ -1,6 +1,7 @@
 package com.money.manager.auth.hash;
 
 import com.google.api.client.util.Base64;
+import com.money.manager.exception.EmptyPasswordException;
 import lombok.SneakyThrows;
 
 import javax.crypto.SecretKey;
@@ -37,7 +38,7 @@ public class PBKDF2Hasher implements Hasher {
     @SneakyThrows
     private static String hash(char[] password, byte[] salt) {
         if (password == null || password.length == 0) {
-            throw new IllegalArgumentException("Empty passwords are not supported.");
+            throw new EmptyPasswordException("Password is empty", "Provide valid password and try again.");
         }
         SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
         SecretKey secretKey = secretKeyFactory.generateSecret(new PBEKeySpec(

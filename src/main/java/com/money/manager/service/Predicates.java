@@ -6,6 +6,7 @@ import com.money.manager.model.Budget;
 import com.money.manager.model.Expense;
 import com.money.manager.model.Wallet;
 
+import java.time.LocalDate;
 import java.util.function.Predicate;
 
 // todo: move it to more suitable package
@@ -13,7 +14,7 @@ class Predicates {
 
     private final static String TRANSFER_CATEGORY = "transfer";
 
-    final static Predicate<ExpenseOutputDto> isProfit = expense -> expense.getCategory().isProfit();
+    final static Predicate<ExpenseOutputDto> isProfit = expense -> expense.getCategory().getProfit();
     final static Predicate<ExpenseOutputDto> isNotProfit = isProfit.negate();
     final static Predicate<ExpenseOutputDto> isNotTransfer = expense -> !expense.getCategory().getName().equals(TRANSFER_CATEGORY);
     final static Predicate<ExpenseOutputDto> isEligibleExpense = isNotTransfer.and(isNotProfit);
@@ -27,7 +28,7 @@ class Predicates {
     }
 
     static Predicate<ExpenseOutputDto> isIncludedIn(Budget budget) {
-        DateRange dateRange = new DateRange(budget.getStart(), budget.getEnd());
+        DateRange dateRange = new DateRange(LocalDate.parse(budget.getStart()), LocalDate.parse(budget.getEnd()));
         return matchesCategoryOf(budget).and(isIn(dateRange));
     }
 

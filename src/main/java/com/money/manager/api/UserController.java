@@ -3,6 +3,7 @@ package com.money.manager.api;
 import com.money.manager.dto.BudgetOutputDto;
 import com.money.manager.dto.ExpenseInputDto;
 import com.money.manager.dto.ExpenseOutputDto;
+import com.money.manager.exception.BadRequestException;
 import com.money.manager.model.money.Money;
 import com.money.manager.dto.WalletDto;
 import com.money.manager.dto.UserDto;
@@ -14,6 +15,7 @@ import com.money.manager.service.UserService;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +34,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 
@@ -52,8 +55,13 @@ public class UserController {
     }
 
     @PutMapping(value = "/{login}", consumes = APPLICATION_JSON_VALUE)
-    public <T> void updateUser(@PathVariable("login") String login, @RequestParam("field") String field, @RequestBody LinkedHashMap<String, T> value) {
-        userService.updateUser(login, field, value);
+    public <T> ResponseEntity<?> updateUser(@PathVariable("login") String login, @RequestParam("field") String field, @RequestBody LinkedHashMap<String, T> value) {
+        try {
+            userService.updateUser(login, field, value);
+        } catch (BadRequestException e) {
+            return e.getResponseEntity();
+        }
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping(value = "/{login}/wallets", produces = APPLICATION_JSON_VALUE)
@@ -62,7 +70,7 @@ public class UserController {
     }
 
     @PostMapping(value = "/{login}/wallets", consumes = APPLICATION_JSON_VALUE)
-    public Integer createWallet(@PathVariable("login") String login, @RequestBody WalletDto walletDto) {
+    public Integer createWallet(@PathVariable("login") String login, @RequestBody @Valid WalletDto walletDto) {
         return userService.addWallet(login, walletDto);
     }
 
@@ -93,7 +101,7 @@ public class UserController {
     @PostMapping(value = "/{login}/wallets/{id}/expenses", consumes = APPLICATION_JSON_VALUE)
     public Integer createExpense(@PathVariable("login") String login,
                               @PathVariable("id") Integer id,
-                              @RequestBody ExpenseInputDto expense) {
+                              @RequestBody @Valid ExpenseInputDto expense) {
         return userService.addExpense(login, id, expense);
     }
 
@@ -131,12 +139,17 @@ public class UserController {
     @Data
     @NoArgsConstructor
     static class BudgetInputDto {
+
         @NotNull
-        private Category category;
-        @NotNull
-        private Money total;
         @Valid
+        private Category category;
+
         @NotNull
+        @Valid
+        private Money total;
+
+        @NotNull
+        @Valid
         private DateRange dateRange;
 
         public Budget toBudget() {
@@ -144,8 +157,8 @@ public class UserController {
                     .category(category)
                     .total(total.getAmount())
                     .currency(total.getCurrency().getCurrencyCode())
-                    .start(dateRange.getStart())
-                    .end(dateRange.getEnd())
+                    .start(dateRange.getStart().format(ISO_LOCAL_DATE))
+                    .end(dateRange.getEnd().format(ISO_LOCAL_DATE))
                     .build();
         }
     }

@@ -1,7 +1,17 @@
 package com.money.manager.exception;
 
-public class BadRequestException extends CustomException {
-    public BadRequestException(String errorMessage) {
-        super(errorMessage);
+import org.springframework.http.ResponseEntity;
+
+public abstract class BadRequestException extends RuntimeException {
+
+    private Problem problem;
+
+    BadRequestException(String problem, String solution) {
+        super(problem);
+        this.problem = new Problem(problem, solution);
+    }
+
+    public ResponseEntity<Problem> getResponseEntity() {
+        return ResponseEntity.badRequest().body(problem);
     }
 }

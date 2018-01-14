@@ -1,7 +1,7 @@
 package com.money.manager.exception;
 
-public class LoginAlreadyTakenException extends CustomException {
-    public LoginAlreadyTakenException(String message) {
-        super(message);
+public class LoginAlreadyTakenException extends BadRequestException {
+    public LoginAlreadyTakenException(String problem, String solution) {
+        super(problem, solution);
     }
 }

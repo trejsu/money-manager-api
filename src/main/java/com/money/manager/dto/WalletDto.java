@@ -8,6 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,7 +19,12 @@ import lombok.Setter;
 @Builder
 public class WalletDto {
     private Integer id;
+
+    @NotNull
+    @Valid
     private Money money;
+
+    @NotNull
     private String name;
 
     public static WalletDto fromWallet(Wallet wallet) {

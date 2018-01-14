@@ -8,12 +8,12 @@ import com.money.manager.dto.BudgetOutputDto;
 import com.money.manager.dto.ExpenseInputDto;
 import com.money.manager.dto.ExpenseOutputDto;
 import com.money.manager.exception.ExpenseNotFoundException;
+import com.money.manager.exception.UpdateFieldException;
 import com.money.manager.model.money.Money;
 import com.money.manager.dto.Summary;
 import com.money.manager.dto.DateRange;
 import com.money.manager.dto.UserDto;
 import com.money.manager.dto.WalletDto;
-import com.money.manager.exception.BadRequestException;
 import com.money.manager.exception.UserNotFoundException;
 import com.money.manager.exception.WalletNotFoundException;
 import com.money.manager.model.Budget;
@@ -79,7 +79,7 @@ public class UserService {
         try {
             PropertyUtils.setProperty(user, field, value.get(field));
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new BadRequestException("Requested field cannot be updated. Validate entered data and try again.");
+            throw new UpdateFieldException("Requested field cannot be updated.", "Validate entered data and try again.");
         }
         userDao.update(user);
     }
@@ -189,13 +189,13 @@ public class UserService {
     private Money getNewAmountAfterExpenseDelete(ExpenseOutputDto toDelete, Wallet wallet) {
         Money toSub = toDelete.getMoney();
         Money current = new Money(wallet.getAmount(), wallet.getCurrency());
-        return toDelete.getCategory().isProfit() ? current.substract(toSub) : current.add(toSub);
+        return toDelete.getCategory().getProfit() ? current.substract(toSub) : current.add(toSub);
     }
 
     private Money getNewAmountAfterAdd(ExpenseInputDto expense, Wallet wallet) {
         Money toAdd = expense.getMoney();
         Money current = new Money(wallet.getAmount(), wallet.getCurrency());
-        return expense.getCategory().isProfit() ? current.add(toAdd) : current.substract(toAdd);
+        return expense.getCategory().getProfit() ? current.add(toAdd) : current.substract(toAdd);
     }
 
     private Summary calculateSummary(List<ExpenseOutputDto> expenses) {
@@ -203,7 +203,7 @@ public class UserService {
         Money outflow = Money.ZERO;
         for (ExpenseOutputDto expense : expenses) {
             Money money = expense.getMoney();
-            if (expense.getCategory().isProfit()) {
+            if (expense.getCategory().getProfit()) {
                 inflow = inflow.add(money);
             } else {
                 outflow = outflow.add(money);

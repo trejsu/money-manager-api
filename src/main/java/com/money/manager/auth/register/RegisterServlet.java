@@ -1,7 +1,7 @@
 package com.money.manager.auth.register;
 
 import com.money.manager.db.dao.UserDao;
-import com.money.manager.exception.LoginAlreadyTakenException;
+import com.money.manager.exception.BadRequestException;
 import com.money.manager.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.net.URI;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -23,12 +25,12 @@ public abstract class RegisterServlet {
 
     @SneakyThrows
     @PostMapping(consumes = APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> register(@RequestBody UserInputDto userInputDto) {
+    public ResponseEntity<?> register(@RequestBody @Valid UserInputDto userInputDto) {
         try {
             userDao.add(initialize(userInputDto));
             return ResponseEntity.created(new URI("/uri_to_change")).build();
-        } catch (LoginAlreadyTakenException e) {
-            return ResponseEntity.ok().build();
+        } catch (BadRequestException e) {
+            return e.getResponseEntity();
         }
     }
 
@@ -43,6 +45,8 @@ public abstract class RegisterServlet {
     @NoArgsConstructor
     @AllArgsConstructor
     static class UserInputDto {
+
+        @NotNull
         private String login;
         private String firstName;
         private String lastName;

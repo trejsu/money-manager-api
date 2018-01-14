@@ -8,13 +8,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 public class ExpenseInputDto {
+
     private String message;
+
+    @NotNull
+    @Valid
     private Money money;
+
+    @NotNull
+    @Valid
     private Category category;
 
     public Expense toExpense() {

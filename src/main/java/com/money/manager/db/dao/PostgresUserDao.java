@@ -31,7 +31,9 @@ public class PostgresUserDao implements UserDao {
         String login = newInstance.getLogin();
         if (get(login).isPresent()) {
             throw new LoginAlreadyTakenException(
-                    "User with login " + login + " already exists!");
+                    "User with login " + login + " already exists!",
+                    "Pick another login and try again"
+            );
         }
     }
 
@@ -55,9 +57,5 @@ public class PostgresUserDao implements UserDao {
         return postgres.executeQuery(session -> session
                 .createQuery("FROM User", User.class)
                 .list());
-    }
-
-    private UserNotFoundException buildUserNotFoundException(String login) {
-        return new UserNotFoundException("User with login " + login + " does not exists");
     }
 }

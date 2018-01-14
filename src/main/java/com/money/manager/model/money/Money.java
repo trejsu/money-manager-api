@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Value;
 
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Currency;
 
@@ -17,6 +19,8 @@ public class Money implements Comparable<Money> {
 
     public final static Money ZERO = new Money(BigDecimal.ZERO, DEFAULT_CURRENCY);
 
+    @NotNull
+    @DecimalMin("0.00")
     private BigDecimal amount;
 
     @JsonIgnore

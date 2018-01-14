@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @NoArgsConstructor
 @Builder
@@ -25,7 +27,7 @@ public class BudgetOutputDto {
                 .category(budget.getCategory())
                 .total(new Money(budget.getTotal(), budget.getCurrency()))
                 .current(current)
-                .dateRange(new DateRange(budget.getStart(), budget.getEnd()))
+                .dateRange(new DateRange(LocalDate.parse(budget.getStart()), LocalDate.parse(budget.getEnd())))
                 .build();
     }
 }

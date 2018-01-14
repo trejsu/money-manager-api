@@ -3,7 +3,6 @@ package com.money.manager.db.dao;
 import com.money.manager.db.Postgres;
 import com.money.manager.model.User;
 import com.money.manager.model.Wallet;
-import com.money.manager.exception.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +34,7 @@ public class PostgresWalletDao implements WalletDao {
     }
 
     @Override
-    public List<Wallet> getAllFromUser(User user) throws CustomException {
+    public List<Wallet> getAllFromUser(User user) {
         final List<Wallet> wallets = user.getWallets();
         wallets.sort(comparingInt(Wallet::getId));
         return wallets;
