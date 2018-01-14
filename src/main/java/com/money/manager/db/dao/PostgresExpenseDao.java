@@ -19,4 +19,12 @@ public class PostgresExpenseDao implements ExpenseDao {
     public Integer add(Expense newInstance) {
         return postgres.executeQuery(session -> (Integer) session.save(newInstance));
     }
+
+    @Override
+    public void remove(Integer id) {
+        postgres.executeQuery(session -> {
+            session.remove(id);
+            return true;
+        });
+    }
 }

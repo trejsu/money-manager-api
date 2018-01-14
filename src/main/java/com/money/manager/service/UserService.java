@@ -171,6 +171,7 @@ public class UserService {
         Wallet wallet = walletId == 0 ? getWalletByExpenseId(expenseId, user) : getWallet(walletId, user);
         final List<Expense> expenses = wallet.getExpenses();
         Expense toDelete = expenses.stream().filter(hasId(expenseId)).findFirst().orElseThrow(() -> new ExpenseNotFoundException(""));
+        expenseDao.remove(expenseId);
         expenses.remove(toDelete);
         Money newWalletAmount = getNewAmountAfterExpenseDelete(fromExpense(toDelete), wallet);
         wallet.setAmount(newWalletAmount.getAmount());
