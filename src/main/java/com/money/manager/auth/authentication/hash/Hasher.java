@@ -1,4 +1,4 @@
-package com.money.manager.auth.hash;
+package com.money.manager.auth.authentication.hash;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;

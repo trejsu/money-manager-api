@@ -1,4 +1,4 @@
-package com.money.manager.auth.register;
+package com.money.manager.auth.authentication.register;
 
 import com.money.manager.db.dao.UserDao;
 import com.money.manager.exception.BadRequestException;

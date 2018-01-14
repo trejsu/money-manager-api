@@ -1,4 +1,4 @@
-package com.money.manager.auth.authorization;
+package com.money.manager.auth.authentication;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -32,7 +32,7 @@ public class AuthenticationFilter implements Filter {
         if (isOptions(httpServletRequest) || authenticated(httpServletRequest)) {
             chain.doFilter(servletRequest, servletResponse);
         } else {
-            httpServletResponse.sendError(401);
+            httpServletResponse.sendError(401, "Not authenticated user. Log in and try again.");
         }
     }
 

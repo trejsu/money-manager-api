@@ -1,7 +1,7 @@
-package com.money.manager.auth.register;
+package com.money.manager.auth.authentication.register;
 
-import com.money.manager.auth.hash.Hasher;
-import com.money.manager.auth.hash.PBKDF2Hasher;
+import com.money.manager.auth.authentication.hash.Hasher;
+import com.money.manager.auth.authentication.hash.PBKDF2Hasher;
 import lombok.SneakyThrows;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

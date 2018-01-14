@@ -1,7 +1,7 @@
 package com.money.manager.auth.authentication;
 
-import com.money.manager.auth.hash.Hasher;
-import com.money.manager.auth.hash.PBKDF2Hasher;
+import com.money.manager.auth.authentication.hash.Hasher;
+import com.money.manager.auth.authentication.hash.PBKDF2Hasher;
 import com.money.manager.db.dao.UserDao;
 import com.money.manager.model.User;
 

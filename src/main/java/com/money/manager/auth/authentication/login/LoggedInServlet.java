@@ -1,4 +1,4 @@
-package com.money.manager.auth.login;
+package com.money.manager.auth.authentication.login;
 
 import com.money.manager.dto.UserDto;
 import com.money.manager.model.User;
@@ -22,7 +22,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class LoggedInServlet {
 
     @GetMapping(value = "/status", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> checkLoggedIn(HttpServletRequest request) {
+    public ResponseEntity<?> checkLoggedIn(HttpServletRequest request) {
         return checkSession(
                 request,
                 httpSession -> ResponseEntity.ok().build(),
@@ -31,7 +31,7 @@ public class LoggedInServlet {
     }
 
     @GetMapping(value = "/user", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<UserDto> getLoggedInUser(HttpServletRequest request) {
+    public ResponseEntity<?> getLoggedInUser(HttpServletRequest request) {
         return checkSession(
                 request,
                 httpSession -> {
@@ -39,7 +39,7 @@ public class LoggedInServlet {
                     UserDto userDto = UserDto.fromUser(user);
                     return new ResponseEntity<>(userDto, HttpStatus.OK);
                 },
-                () -> ResponseEntity.status(401).build()
+                () -> ResponseEntity.status(401).body("{\"error\":\"Not authenticated user. Log in and try again.\"}")
         );
     }
 

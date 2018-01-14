@@ -1,4 +1,4 @@
-package com.money.manager.auth.login;
+package com.money.manager.auth.authentication.login;
 
 import com.money.manager.auth.authentication.Authenticator;
 import com.money.manager.auth.authentication.AuthenticationData;

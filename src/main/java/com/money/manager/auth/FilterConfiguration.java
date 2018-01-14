@@ -2,7 +2,7 @@ package com.money.manager.auth;
 
 
 import com.money.manager.auth.authorization.AdminAccessFilter;
-import com.money.manager.auth.authorization.AuthenticationFilter;
+import com.money.manager.auth.authentication.AuthenticationFilter;
 import com.money.manager.auth.authorization.ResourceAccessFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;

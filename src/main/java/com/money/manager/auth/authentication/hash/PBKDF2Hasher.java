@@ -1,4 +1,4 @@
-package com.money.manager.auth.hash;
+package com.money.manager.auth.authentication.hash;
 
 import com.google.api.client.util.Base64;
 import com.money.manager.exception.EmptyPasswordException;
@@ -7,9 +7,7 @@ import lombok.SneakyThrows;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
 
 public class PBKDF2Hasher implements Hasher {
 

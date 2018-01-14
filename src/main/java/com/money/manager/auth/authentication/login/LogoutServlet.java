@@ -1,4 +1,4 @@
-package com.money.manager.auth.login;
+package com.money.manager.auth.authentication.login;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

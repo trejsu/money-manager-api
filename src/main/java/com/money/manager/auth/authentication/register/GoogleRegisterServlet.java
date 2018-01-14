@@ -1,4 +1,4 @@
-package com.money.manager.auth.register;
+package com.money.manager.auth.authentication.register;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
