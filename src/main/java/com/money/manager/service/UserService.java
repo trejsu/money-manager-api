@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.money.manager.dto.ExpenseOutputDto.fromExpense;
+import static com.money.manager.service.Predicates.containsExpenseWithId;
 import static com.money.manager.service.Predicates.hasId;
 import static com.money.manager.service.Predicates.isEligibleExpense;
 import static com.money.manager.service.Predicates.isIn;
@@ -165,15 +166,23 @@ public class UserService {
         return id;
     }
 
-    public void deleteExpense(String login, Integer wallet_id, Integer expense_id) {
+    public void deleteExpense(String login, Integer walletId, Integer expenseId) {
         User user = getUser(login);
-        Wallet wallet = getWallet(wallet_id, user);
+        Wallet wallet = walletId == 0 ? getWalletByExpenseId(expenseId, user) : getWallet(walletId, user);
         final List<Expense> expenses = wallet.getExpenses();
-        Expense toDelete = expenses.stream().filter(hasId(expense_id)).findFirst().orElseThrow(() -> new ExpenseNotFoundException(""));
+        Expense toDelete = expenses.stream().filter(hasId(expenseId)).findFirst().orElseThrow(() -> new ExpenseNotFoundException(""));
         expenses.remove(toDelete);
         Money newWalletAmount = getNewAmountAfterExpenseDelete(fromExpense(toDelete), wallet);
         wallet.setAmount(newWalletAmount.getAmount());
         walletDao.update(wallet);
+    }
+
+    private Wallet getWalletByExpenseId(Integer expenseId, User user) {
+        return user.getWallets()
+                .stream()
+                .filter(containsExpenseWithId(expenseId))
+                .findFirst()
+                .orElseThrow(() -> new WalletNotFoundException(""));
     }
 
     private Money getNewAmountAfterExpenseDelete(ExpenseOutputDto toDelete, Wallet wallet) {

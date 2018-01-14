@@ -28,4 +28,8 @@ public class DateRange {
         final LocalDate endDate = LocalDate.parse(end);
         return !(parsedDate.isBefore(startDate) || parsedDate.isAfter(endDate));
     }
+
+    public static DateRange withoutBounds() {
+        return new DateRange(null, null);
+    }
 }

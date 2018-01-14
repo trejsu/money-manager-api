@@ -4,6 +4,7 @@ import com.money.manager.dto.ExpenseOutputDto;
 import com.money.manager.dto.DateRange;
 import com.money.manager.model.Budget;
 import com.money.manager.model.Expense;
+import com.money.manager.model.Wallet;
 
 import java.util.function.Predicate;
 
@@ -36,5 +37,9 @@ class Predicates {
 
     static Predicate<Expense> hasId(Integer id) {
         return expense -> expense.getId().equals(id);
+    }
+
+    static Predicate<Wallet> containsExpenseWithId(Integer id) {
+        return wallet -> wallet.getExpenses().stream().anyMatch(hasId(id));
     }
 }
