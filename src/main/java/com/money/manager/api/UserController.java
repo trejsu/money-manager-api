@@ -35,6 +35,7 @@ import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -57,13 +58,13 @@ public class UserController {
     }
 
     @PutMapping(value = "/{login}", consumes = APPLICATION_JSON_VALUE)
-    public <T> ResponseEntity<?> updateUser(@PathVariable("login") String login, @RequestParam("field") String field, @RequestBody LinkedHashMap<String, T> value) {
-        try {
+    public <T> ResponseEntity<?> updateUser(@PathVariable("login") String login,
+                                            @RequestParam("field") String field,
+                                            @RequestBody LinkedHashMap<String, T> value) {
+        return getResponseWithErrorHandling(() -> {
             userService.updateUser(login, field, value);
             return ResponseEntity.noContent().build();
-        } catch (ErrorResponseException e) {
-            return e.getResponseEntity();
-        }
+        });
     }
 
     @GetMapping(value = "/{login}/wallets", produces = APPLICATION_JSON_VALUE)
@@ -78,101 +79,100 @@ public class UserController {
 
     @GetMapping(value = "/{login}/wallets/{id}/summary", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getSummary(@PathVariable("login") String login,
-                              @PathVariable("id") Integer id,
-                              @RequestParam(name = "start", required = false) String start,
-                              @RequestParam(name = "end", required = false) String end) {
-        try {
+                                        @PathVariable("id") Integer id,
+                                        @RequestParam(name = "start", required = false) String start,
+                                        @RequestParam(name = "end", required = false) String end) {
+        return getResponseWithErrorHandling(() -> {
             final Summary summary = userService.getSummary(login, id, new DateRange(start, end));
             return ResponseEntity.ok(summary);
-        } catch (ErrorResponseException e) {
-            return e.getResponseEntity();
-        }
+        });
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/expenses", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getExpenses(@PathVariable("login") String login,
-                                              @PathVariable("id") Integer id,
-                                              @RequestParam(name = "start", required = false) String start,
-                                              @RequestParam(name = "end", required = false) String end) {
-        try {
-            final List<ExpenseOutputDto> expenses = userService.getExpenses(login, id, new DateRange(start, end));
+                                         @PathVariable("id") Integer id,
+                                         @RequestParam(name = "start", required = false) String start,
+                                         @RequestParam(name = "end", required = false) String end) {
+        return getResponseWithErrorHandling(() -> {
+            final DateRange dateRange = new DateRange(start, end);
+            final List<ExpenseOutputDto> expenses = userService.getExpenses(login, id, dateRange);
             return ResponseEntity.ok(expenses);
-        } catch (ErrorResponseException e) {
-            return e.getResponseEntity();
-        }
+        });
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/highest_expense", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getHighestExpense(@PathVariable("login") String login,
-                                     @PathVariable("id") Integer id,
-                                     @RequestParam(name = "start", required = false) String start,
-                                     @RequestParam(name = "end", required = false) String end) {
-        try {
-            final ExpenseOutputDto highestExpense = userService.getHighestExpense(login, id, new DateRange(start, end));
+                                               @PathVariable("id") Integer id,
+                                               @RequestParam(name = "start", required = false) String start,
+                                               @RequestParam(name = "end", required = false) String end) {
+        return getResponseWithErrorHandling(() -> {
+            final DateRange dateRange = new DateRange(start, end);
+            final ExpenseOutputDto highestExpense = userService.getHighestExpense(login, id, dateRange);
             return ResponseEntity.ok(highestExpense);
-        } catch (ErrorResponseException e) {
-            return e.getResponseEntity();
-        }
+        });
     }
 
     @SneakyThrows
     @PostMapping(value = "/{login}/wallets/{id}/expenses", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createExpense(@PathVariable("login") String login,
-                              @PathVariable("id") Integer id,
-                              @RequestBody @Valid ExpenseInputDto expense) {
-        try {
+                                           @PathVariable("id") Integer id,
+                                           @RequestBody @Valid ExpenseInputDto expense) {
+        return getResponseWithErrorHandling(() -> {
             final Integer expenseId = userService.addExpense(login, id, expense);
-            return ResponseEntity.created(URI.create("/" + login + "/wallets/" + id + "/expenses/" + expenseId)).build();
-        } catch (ErrorResponseException e) {
-            return e.getResponseEntity();
-        }
+            final String location = "/" + login + "/wallets/" + id + "/expenses/" + expenseId;
+            return ResponseEntity.created(URI.create(location)).build();
+        });
     }
 
     @CrossOrigin(origins = "http://localhost:8081")
     @DeleteMapping(value = "/{login}/wallets/{wallet_id}/expenses/{expense_id}")
     public ResponseEntity<?> deleteExpense(@PathVariable("login") String login,
-                              @PathVariable("wallet_id") Integer wallet_id,
-                              @PathVariable("expense_id") Integer expense_id) {
-        try {
+                                           @PathVariable("wallet_id") Integer wallet_id,
+                                           @PathVariable("expense_id") Integer expense_id) {
+        return getResponseWithErrorHandling(() -> {
             userService.deleteExpense(login, wallet_id, expense_id);
             return ResponseEntity.noContent().build();
-        } catch (ErrorResponseException e) {
-            return e.getResponseEntity();
-        }
+        });
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/counted_categories", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getCountedCategories(@PathVariable("login") String login,
-                                                        @PathVariable("id") Integer id,
-                                                        @RequestParam(name = "start", required = false) String start,
-                                                        @RequestParam(name = "end", required = false) String end) {
-        try {
-            final Map<String, BigDecimal> countedCategories = userService.getCountedCategories(login, id, new DateRange(start, end));
+                                                  @PathVariable("id") Integer id,
+                                                  @RequestParam(name = "start", required = false) String start,
+                                                  @RequestParam(name = "end", required = false) String end) {
+        return getResponseWithErrorHandling(() -> {
+            final DateRange dateRange = new DateRange(start, end);
+            final Map<String, BigDecimal> countedCategories = userService.getCountedCategories(login, id, dateRange);
             return ResponseEntity.ok(countedCategories);
-        } catch (ErrorResponseException e) {
-            return e.getResponseEntity();
-        }
+        });
     }
 
     @GetMapping(value = "/{login}/budgets", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getBudgets(@PathVariable("login") String login,
-                                            @RequestParam(name = "start_min", required = false) String startMin,
-                                            @RequestParam(name = "start_max", required = false) String startMax,
-                                            @RequestParam(name = "end_min", required = false) String endMin,
-                                            @RequestParam(name = "end_max", required = false) String endMax) {
-        try {
-            final List<BudgetOutputDto> budgets = userService.getBudgets(login, new DateRange(startMin, startMax), new DateRange(endMin, endMax));
+                                        @RequestParam(name = "start_min", required = false) String startMin,
+                                        @RequestParam(name = "start_max", required = false) String startMax,
+                                        @RequestParam(name = "end_min", required = false) String endMin,
+                                        @RequestParam(name = "end_max", required = false) String endMax) {
+        return getResponseWithErrorHandling(() -> {
+            final DateRange start = new DateRange(startMin, startMax);
+            final DateRange end = new DateRange(endMin, endMax);
+            final List<BudgetOutputDto> budgets = userService.getBudgets(login, start, end);
             return ResponseEntity.ok(budgets);
-        } catch (ErrorResponseException e) {
-            return e.getResponseEntity();
-        }
+        });
     }
 
     @PostMapping(value = "/{login}/budgets", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createBudget(@PathVariable("login") String login, @Valid @RequestBody BudgetInputDto budget) {
-        try {
+        return getResponseWithErrorHandling(() -> {
             final Integer budgetId = userService.addBudget(login, budget.toBudget());
-            return ResponseEntity.created(URI.create("/" + login + "/budgets/" + budgetId)).build();
+            final String location = "/" + login + "/budgets/" + budgetId;
+            return ResponseEntity.created(URI.create(location)).build();
+        });
+    }
+
+    private ResponseEntity<?> getResponseWithErrorHandling(Supplier<ResponseEntity<?>> getResponse) {
+        try {
+            return getResponse.get();
         } catch (ErrorResponseException e) {
             return e.getResponseEntity();
         }
@@ -194,7 +194,7 @@ public class UserController {
         @Valid
         private DateRange dateRange;
 
-        public Budget toBudget() {
+        Budget toBudget() {
             return Budget.builder()
                     .category(category)
                     .total(total.getAmount())
