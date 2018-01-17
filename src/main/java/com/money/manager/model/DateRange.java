@@ -28,10 +28,10 @@ public class DateRange {
     private final static LocalDate MAX_DATE = parse("9999-12-31");
 
     @Column(name = "start")
-    LocalDate start;
+    private LocalDate start;
 
     @Column(name = "end")
-    LocalDate end;
+    private LocalDate end;
 
     @JsonCreator
     public DateRange(@JsonProperty("start") LocalDate start, @JsonProperty("end") LocalDate end) {
