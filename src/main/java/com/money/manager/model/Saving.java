@@ -17,6 +17,7 @@ import javax.persistence.Lob;
 import javax.persistence.Table;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
 import static javax.persistence.GenerationType.IDENTITY;
 
@@ -54,5 +55,5 @@ public class Saving implements Serializable {
     private Money current;
 
     @Column(name = "start_date")
-    private String start;
+    private LocalDate start;
 }

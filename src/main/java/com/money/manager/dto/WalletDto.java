@@ -23,7 +23,7 @@ public class WalletDto {
 
     @NotNull
     @Valid
-    private Money money;
+    private Money amount;
 
     @NotNull
     private String name;
@@ -31,7 +31,7 @@ public class WalletDto {
     public static WalletDto fromWallet(Wallet wallet) {
         return builder()
                 .id(wallet.getId())
-                .money(wallet.getAmount())
+                .amount(wallet.getAmount())
                 .name(wallet.getName())
                 .build();
     }
@@ -39,7 +39,7 @@ public class WalletDto {
     public Wallet toWallet() {
         return Wallet.builder()
                 .id(id)
-                .amount(money)
+                .amount(amount)
                 .name(name)
                 .build();
     }

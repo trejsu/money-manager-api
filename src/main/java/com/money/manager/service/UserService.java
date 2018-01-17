@@ -6,7 +6,6 @@ import com.money.manager.db.dao.UserDao;
 import com.money.manager.db.dao.WalletDao;
 import com.money.manager.dto.BudgetOutputDto;
 import com.money.manager.dto.ExpenseInputDto;
-import com.money.manager.dto.ExpenseOutputDto;
 import com.money.manager.exception.ExpenseNotFoundException;
 import com.money.manager.exception.UpdateFieldException;
 import com.money.manager.model.money.Money;
@@ -27,20 +26,17 @@ import org.springframework.stereotype.Service;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.money.manager.dto.ExpenseOutputDto.fromExpense;
 import static com.money.manager.service.Predicates.containsExpenseWithId;
 import static com.money.manager.service.Predicates.hasId;
 import static com.money.manager.service.Predicates.isEligibleExpense;
 import static com.money.manager.service.Predicates.isIn;
 import static com.money.manager.service.Predicates.isIncludedIn;
 import static com.money.manager.service.Predicates.isNotProfit;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
@@ -50,7 +46,6 @@ import static java.util.stream.Collectors.toMap;
 @Service
 public class UserService {
 
-    private final static DateTimeFormatter DATE_TIME_FORMATTER = ISO_LOCAL_DATE;
     private final static String SUMMARY_WALLET_NAME = "wszystkie";
 
     private final UserDao userDao;
@@ -109,17 +104,17 @@ public class UserService {
         return calculateSummary(getExpenses(login, id, dateRange));
     }
 
-    public List<ExpenseOutputDto> getExpenses(String login, Integer id, DateRange dateRange) {
+    public List<Expense> getExpenses(String login, Integer id, DateRange dateRange) {
         User user = getUser(login);
         return id == 0 ? getAllExpenses(user, dateRange) : getExpensesFromWallet(user, id, dateRange);
     }
 
-    public ExpenseOutputDto getHighestExpense(String login, Integer id, DateRange dateRange) {
-        List<ExpenseOutputDto> expenses = getExpenses(login, id, dateRange);
+    public Expense getHighestExpense(String login, Integer id, DateRange dateRange) {
+        List<Expense> expenses = getExpenses(login, id, dateRange);
         return expenses
                 .stream()
                 .filter(isNotProfit)
-                .max(comparing(ExpenseOutputDto::getMoney))
+                .max(comparing(Expense::getAmount))
                 .orElse(null);
     }
 
@@ -127,7 +122,7 @@ public class UserService {
         User user = getUser(login);
         Wallet wallet = getWallet(id, user);
         Expense expense = expenseInputDto.toExpense();
-        expense.setDate(LocalDate.now().format(DATE_TIME_FORMATTER));
+        expense.setDate(LocalDate.now());
         Integer expenseId = expenseDao.add(expense);
         wallet.getExpenses().add(expense);
         Money newWalletAmount = getNewAmountAfterAdd(expenseInputDto, wallet);
@@ -137,19 +132,19 @@ public class UserService {
     }
 
     public Map<String, BigDecimal> getCountedCategories(String login, Integer id, DateRange dateRange) {
-        final List<ExpenseOutputDto> expenses = getExpenses(login, id, dateRange);
+        final List<Expense> expenses = getExpenses(login, id, dateRange);
         return expenses
                 .stream()
                 .filter(isIn(dateRange).and(isEligibleExpense))
                 .collect(groupingBy(expense -> expense.getCategory().getName()))
                 .entrySet()
                 .stream()
-                .collect(toMap(Map.Entry::getKey, e -> e.getValue().stream().map(ExpenseOutputDto::getMoney).reduce(Money.ZERO, Money::add).getAmount()));
+                .collect(toMap(Map.Entry::getKey, e -> e.getValue().stream().map(Expense::getAmount).reduce(Money.ZERO, Money::add).getAmount()));
     }
 
     public List<BudgetOutputDto> getBudgets(String login, DateRange start, DateRange end) {
         User user = getUser(login);
-        List<ExpenseOutputDto> expenses = getAllExpenses(user, new DateRange(start.getStart(), end.getEnd()));
+        List<Expense> expenses = getAllExpenses(user, new DateRange(start.getStart(), end.getEnd()));
         return user
                 .getBudgets()
                 .stream()
@@ -172,7 +167,7 @@ public class UserService {
         final List<Expense> expenses = wallet.getExpenses();
         Expense toDelete = expenses.stream().filter(hasId(expenseId)).findFirst().orElseThrow(() -> new ExpenseNotFoundException(expenseId));
         expenses.remove(toDelete);
-        Money newWalletAmount = getNewAmountAfterExpenseDelete(fromExpense(toDelete), wallet);
+        Money newWalletAmount = getNewAmountAfterExpenseDelete(toDelete, wallet);
         wallet.setAmount(newWalletAmount);
         walletDao.update(wallet);
     }
@@ -185,23 +180,23 @@ public class UserService {
                 .orElseThrow(() -> new ExpenseNotFoundException(expenseId));
     }
 
-    private Money getNewAmountAfterExpenseDelete(ExpenseOutputDto toDelete, Wallet wallet) {
-        Money toSub = toDelete.getMoney();
+    private Money getNewAmountAfterExpenseDelete(Expense toDelete, Wallet wallet) {
+        Money toSub = toDelete.getAmount();
         Money current = wallet.getAmount();
         return toDelete.getCategory().getProfit() ? current.substract(toSub) : current.add(toSub);
     }
 
     private Money getNewAmountAfterAdd(ExpenseInputDto expense, Wallet wallet) {
-        Money toAdd = expense.getMoney();
+        Money toAdd = expense.getAmount();
         Money current = wallet.getAmount();
         return expense.getCategory().getProfit() ? current.add(toAdd) : current.substract(toAdd);
     }
 
-    private Summary calculateSummary(List<ExpenseOutputDto> expenses) {
+    private Summary calculateSummary(List<Expense> expenses) {
         Money inflow = Money.ZERO;
         Money outflow = Money.ZERO;
-        for (ExpenseOutputDto expense : expenses) {
-            Money money = expense.getMoney();
+        for (Expense expense : expenses) {
+            Money money = expense.getAmount();
             if (expense.getCategory().getProfit()) {
                 inflow = inflow.add(money);
             } else {
@@ -211,11 +206,11 @@ public class UserService {
         return new Summary(inflow, outflow);
     }
 
-    private Money calculateCurrent(Budget budget, List<ExpenseOutputDto> expenses) {
+    private Money calculateCurrent(Budget budget, List<Expense> expenses) {
         return expenses
                 .stream()
                 .filter(isIncludedIn(budget))
-                .map(ExpenseOutputDto::getMoney)
+                .map(Expense::getAmount)
                 .reduce(Money.ZERO, Money::add);
     }
 
@@ -232,23 +227,21 @@ public class UserService {
                 .orElseThrow(() -> new WalletNotFoundException(id));
     }
 
-    private List<ExpenseOutputDto> getExpensesFromWallet(User user, Integer id, DateRange dateRange) {
+    private List<Expense> getExpensesFromWallet(User user, Integer id, DateRange dateRange) {
         Wallet wallet = getWallet(id, user);
         return wallet
                 .getExpenses()
                 .stream()
-                .map(ExpenseOutputDto::fromExpense)
                 .filter(isIn(dateRange))
                 .collect(toList());
     }
 
-    private List<ExpenseOutputDto> getAllExpenses(User user, DateRange dateRange) {
+    private List<Expense> getAllExpenses(User user, DateRange dateRange) {
         return user
                 .getWallets()
                 .stream()
                 .map(Wallet::getExpenses)
                 .flatMap(List::stream)
-                .map(ExpenseOutputDto::fromExpense)
                 .filter(isIn(dateRange))
                 .collect(toList());
     }
@@ -259,7 +252,7 @@ public class UserService {
                 .stream()
                 .map(Wallet::getAmount)
                 .reduce(Money.ZERO, Money::add);
-        return WalletDto.builder().id(0).money(money).name(SUMMARY_WALLET_NAME).build();
+        return WalletDto.builder().id(0).amount(money).name(SUMMARY_WALLET_NAME).build();
     }
 
 

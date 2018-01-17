@@ -21,7 +21,7 @@ public class ExpenseInputDto {
 
     @NotNull
     @Valid
-    private Money money;
+    private Money amount;
 
     @NotNull
     @Valid
@@ -29,7 +29,7 @@ public class ExpenseInputDto {
 
     public Expense toExpense() {
         return Expense.builder()
-                .amount(money)
+                .amount(amount)
                 .category(category)
                 .message(message)
                 .build();

@@ -2,8 +2,8 @@ package com.money.manager.api;
 
 import com.money.manager.dto.BudgetOutputDto;
 import com.money.manager.dto.ExpenseInputDto;
-import com.money.manager.dto.ExpenseOutputDto;
 import com.money.manager.exception.ErrorResponseException;
+import com.money.manager.model.Expense;
 import com.money.manager.model.money.Money;
 import com.money.manager.dto.WalletDto;
 import com.money.manager.dto.UserDto;
@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 
@@ -95,7 +94,7 @@ public class UserController {
                                          @RequestParam(name = "end", required = false) String end) {
         return getResponseWithErrorHandling(() -> {
             final DateRange dateRange = new DateRange(start, end);
-            final List<ExpenseOutputDto> expenses = userService.getExpenses(login, id, dateRange);
+            final List<Expense> expenses = userService.getExpenses(login, id, dateRange);
             return ResponseEntity.ok(expenses);
         });
     }
@@ -107,7 +106,7 @@ public class UserController {
                                                @RequestParam(name = "end", required = false) String end) {
         return getResponseWithErrorHandling(() -> {
             final DateRange dateRange = new DateRange(start, end);
-            final ExpenseOutputDto highestExpense = userService.getHighestExpense(login, id, dateRange);
+            final Expense highestExpense = userService.getHighestExpense(login, id, dateRange);
             return ResponseEntity.ok(highestExpense);
         });
     }

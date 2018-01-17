@@ -18,6 +18,7 @@ import javax.persistence.JoinColumns;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import static javax.persistence.GenerationType.IDENTITY;
 
@@ -38,7 +39,7 @@ public class Expense {
     private String message;
 
     @Column(name = "date")
-    private String date;
+    private LocalDate date;
 
     @Embedded
     private Money amount;

@@ -1,12 +1,10 @@
 package com.money.manager.service;
 
-import com.money.manager.dto.ExpenseOutputDto;
 import com.money.manager.model.DateRange;
 import com.money.manager.model.Budget;
 import com.money.manager.model.Expense;
 import com.money.manager.model.Wallet;
 
-import java.time.LocalDate;
 import java.util.function.Predicate;
 
 // todo: move it to more suitable package
@@ -14,12 +12,12 @@ class Predicates {
 
     private final static String TRANSFER_CATEGORY = "transfer";
 
-    final static Predicate<ExpenseOutputDto> isProfit = expense -> expense.getCategory().getProfit();
-    final static Predicate<ExpenseOutputDto> isNotProfit = isProfit.negate();
-    final static Predicate<ExpenseOutputDto> isNotTransfer = expense -> !expense.getCategory().getName().equals(TRANSFER_CATEGORY);
-    final static Predicate<ExpenseOutputDto> isEligibleExpense = isNotTransfer.and(isNotProfit);
+    final static Predicate<Expense> isProfit = expense -> expense.getCategory().getProfit();
+    final static Predicate<Expense> isNotProfit = isProfit.negate();
+    final static Predicate<Expense> isNotTransfer = expense -> !expense.getCategory().getName().equals(TRANSFER_CATEGORY);
+    final static Predicate<Expense> isEligibleExpense = isNotTransfer.and(isNotProfit);
 
-    static Predicate<ExpenseOutputDto> isIn(DateRange dateRange) {
+    static Predicate<Expense> isIn(DateRange dateRange) {
         return expense -> dateRange.containsDate(expense.getDate());
     }
 
@@ -28,11 +26,11 @@ class Predicates {
                          end.containsDate(budget.getDateRange().getEnd());
     }
 
-    static Predicate<ExpenseOutputDto> isIncludedIn(Budget budget) {
+    static Predicate<Expense> isIncludedIn(Budget budget) {
         return matchesCategoryOf(budget).and(isIn(budget.getDateRange()));
     }
 
-    static Predicate<ExpenseOutputDto> matchesCategoryOf(Budget budget) {
+    static Predicate<Expense> matchesCategoryOf(Budget budget) {
         return expense -> expense.getCategory().equals(budget.getCategory());
     }
 
