@@ -47,9 +47,10 @@ public class Budget {
     @Embedded
     private Money total;
 
-    @Column(name = "start_date")
-    private String start;
-
-    @Column(name = "end_date")
-    private String end;
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "start", column = @Column(name = "start_date")),
+            @AttributeOverride(name = "end", column = @Column(name = "end_date"))
+    })
+    private DateRange dateRange;
 }

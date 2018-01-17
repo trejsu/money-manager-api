@@ -11,7 +11,7 @@ import com.money.manager.exception.ExpenseNotFoundException;
 import com.money.manager.exception.UpdateFieldException;
 import com.money.manager.model.money.Money;
 import com.money.manager.dto.Summary;
-import com.money.manager.dto.DateRange;
+import com.money.manager.model.DateRange;
 import com.money.manager.dto.UserDto;
 import com.money.manager.dto.WalletDto;
 import com.money.manager.exception.UserNotFoundException;

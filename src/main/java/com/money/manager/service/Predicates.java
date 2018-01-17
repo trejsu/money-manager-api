@@ -1,7 +1,7 @@
 package com.money.manager.service;
 
 import com.money.manager.dto.ExpenseOutputDto;
-import com.money.manager.dto.DateRange;
+import com.money.manager.model.DateRange;
 import com.money.manager.model.Budget;
 import com.money.manager.model.Expense;
 import com.money.manager.model.Wallet;
@@ -24,12 +24,12 @@ class Predicates {
     }
 
     static Predicate<Budget> isIn(DateRange start, DateRange end) {
-        return budget -> start.containsDate(budget.getStart()) && end.containsDate(budget.getEnd());
+        return budget -> start.containsDate(budget.getDateRange().getStart()) &&
+                         end.containsDate(budget.getDateRange().getEnd());
     }
 
     static Predicate<ExpenseOutputDto> isIncludedIn(Budget budget) {
-        DateRange dateRange = new DateRange(LocalDate.parse(budget.getStart()), LocalDate.parse(budget.getEnd()));
-        return matchesCategoryOf(budget).and(isIn(dateRange));
+        return matchesCategoryOf(budget).and(isIn(budget.getDateRange()));
     }
 
     static Predicate<ExpenseOutputDto> matchesCategoryOf(Budget budget) {

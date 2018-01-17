@@ -1,7 +1,7 @@
 package com.money.manager.common.validation;
 
 
-import com.money.manager.dto.DateRange;
+import com.money.manager.model.DateRange;
 
 import javax.validation.Constraint;
 import javax.validation.ConstraintValidator;
