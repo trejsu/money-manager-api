@@ -1,17 +1,22 @@
 package com.money.manager.model;
 
+import com.money.manager.model.money.Money;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
-import java.math.BigDecimal;
+
+import java.io.Serializable;
 
 import static javax.persistence.GenerationType.IDENTITY;
 
@@ -21,7 +26,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Setter
 @Entity
 @Table(name = "SAVING")
-public class Saving {
+public class Saving implements Serializable {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "ID")
@@ -34,11 +39,19 @@ public class Saving {
     @Column(name = "icon")
     private byte[] icon;
 
-    @Column(name = "total")
-    private BigDecimal total;
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "amount", column = @Column(name = "total")),
+            @AttributeOverride(name = "currency", column = @Column(name = "total_currency"))
+    })
+    private Money total;
 
-    @Column(name = "current")
-    private BigDecimal current;
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "amount", column = @Column(name = "current")),
+            @AttributeOverride(name = "currency", column = @Column(name = "current_currency"))
+    })
+    private Money current;
 
     @Column(name = "start_date")
     private String start;

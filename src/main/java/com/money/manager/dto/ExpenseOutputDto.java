@@ -27,7 +27,7 @@ public class ExpenseOutputDto {
         return ExpenseOutputDto.builder()
                 .id(expense.getId())
                 .message(expense.getMessage())
-                .money(new Money(expense.getAmount(), expense.getCurrency()))
+                .money(expense.getAmount())
                 .category(expense.getCategory())
                 .date(LocalDate.parse(expense.getDate()))
                 .build();

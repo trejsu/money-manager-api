@@ -25,7 +25,7 @@ public class BudgetOutputDto {
         return builder()
                 .id(budget.getId())
                 .category(budget.getCategory())
-                .total(new Money(budget.getTotal(), budget.getCurrency()))
+                .total(budget.getTotal())
                 .current(current)
                 .dateRange(new DateRange(LocalDate.parse(budget.getStart()), LocalDate.parse(budget.getEnd())))
                 .build();

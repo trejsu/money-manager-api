@@ -131,7 +131,7 @@ public class UserService {
         Integer expenseId = expenseDao.add(expense);
         wallet.getExpenses().add(expense);
         Money newWalletAmount = getNewAmountAfterAdd(expenseInputDto, wallet);
-        wallet.setAmount(newWalletAmount.getAmount());
+        wallet.setAmount(newWalletAmount);
         walletDao.update(wallet);
         return expenseId;
     }
@@ -173,7 +173,7 @@ public class UserService {
         Expense toDelete = expenses.stream().filter(hasId(expenseId)).findFirst().orElseThrow(() -> new ExpenseNotFoundException(expenseId));
         expenses.remove(toDelete);
         Money newWalletAmount = getNewAmountAfterExpenseDelete(fromExpense(toDelete), wallet);
-        wallet.setAmount(newWalletAmount.getAmount());
+        wallet.setAmount(newWalletAmount);
         walletDao.update(wallet);
     }
 
@@ -187,13 +187,13 @@ public class UserService {
 
     private Money getNewAmountAfterExpenseDelete(ExpenseOutputDto toDelete, Wallet wallet) {
         Money toSub = toDelete.getMoney();
-        Money current = new Money(wallet.getAmount(), wallet.getCurrency());
+        Money current = wallet.getAmount();
         return toDelete.getCategory().getProfit() ? current.substract(toSub) : current.add(toSub);
     }
 
     private Money getNewAmountAfterAdd(ExpenseInputDto expense, Wallet wallet) {
         Money toAdd = expense.getMoney();
-        Money current = new Money(wallet.getAmount(), wallet.getCurrency());
+        Money current = wallet.getAmount();
         return expense.getCategory().getProfit() ? current.add(toAdd) : current.substract(toAdd);
     }
 
@@ -257,7 +257,7 @@ public class UserService {
         Money money = user
                 .getWallets()
                 .stream()
-                .map(wallet -> new Money(wallet.getAmount(), wallet.getCurrency()))
+                .map(Wallet::getAmount)
                 .reduce(Money.ZERO, Money::add);
         return WalletDto.builder().id(0).money(money).name(SUMMARY_WALLET_NAME).build();
     }

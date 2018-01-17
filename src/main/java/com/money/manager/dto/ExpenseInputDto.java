@@ -29,8 +29,7 @@ public class ExpenseInputDto {
 
     public Expense toExpense() {
         return Expense.builder()
-                .amount(money.getAmount())
-                .currency(money.getCurrency().getCurrencyCode())
+                .amount(money)
                 .category(category)
                 .message(message)
                 .build();

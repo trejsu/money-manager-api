@@ -3,17 +3,28 @@ package com.money.manager.model.money;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.Transient;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Currency;
 
 import static java.util.Optional.ofNullable;
 
-@Value
-public class Money implements Comparable<Money> {
+@Embeddable
+@NoArgsConstructor
+@EqualsAndHashCode
+@Getter
+@ToString
+public class Money implements Comparable<Money>, Serializable {
 
     private final static String DEFAULT_CURRENCY = "PLN";
 
@@ -21,16 +32,16 @@ public class Money implements Comparable<Money> {
 
     @NotNull
     @DecimalMin("0.00")
+    @Column(name = "amount")
     private BigDecimal amount;
 
-    @JsonIgnore
+    @Column(name = "currency")
     private Currency currency;
 
     @JsonCreator
     public Money(@JsonProperty("amount") BigDecimal amount, @JsonProperty("currency") String currencyCode) {
         this.amount = amount;
-        final String code = ofNullable(currencyCode).orElse(DEFAULT_CURRENCY);
-        this.currency = Currency.getInstance(code);
+        this.currency = Currency.getInstance(ofNullable(currencyCode).orElse(DEFAULT_CURRENCY));
     }
 
     private Money(BigDecimal amount, Currency currency) {
@@ -59,7 +70,6 @@ public class Money implements Comparable<Money> {
     private Money convertTo(Currency newCurrency) {
         return currency.equals(newCurrency) ? this : new Money(MoneyConverter.convert(amount, currency, newCurrency), newCurrency);
     }
-
 }
 
 

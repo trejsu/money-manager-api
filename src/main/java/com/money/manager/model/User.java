@@ -58,14 +58,8 @@ public class User {
     private List<Saving> savings;
 
     @Builder
-    public User(String login,
-                String firstName,
-                String lastName,
-                char[] password,
-                boolean admin,
-                List<Wallet> wallets,
-                List<Budget> budgets,
-                List<Saving> savings) {
+    public User(String login, String firstName, String lastName, char[] password, boolean admin, List<Wallet> wallets,
+                List<Budget> budgets, List<Saving> savings) {
         this.login = login;
         this.firstName = firstName;
         this.lastName = lastName;

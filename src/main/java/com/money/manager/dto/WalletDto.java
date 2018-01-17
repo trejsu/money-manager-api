@@ -18,6 +18,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 @Builder
 public class WalletDto {
+
     private Integer id;
 
     @NotNull
@@ -30,7 +31,7 @@ public class WalletDto {
     public static WalletDto fromWallet(Wallet wallet) {
         return builder()
                 .id(wallet.getId())
-                .money(new Money(wallet.getAmount(), wallet.getCurrency()))
+                .money(wallet.getAmount())
                 .name(wallet.getName())
                 .build();
     }
@@ -38,8 +39,7 @@ public class WalletDto {
     public Wallet toWallet() {
         return Wallet.builder()
                 .id(id)
-                .amount(money.getAmount())
-                .currency(money.getCurrency().getCurrencyCode())
+                .amount(money)
                 .name(name)
                 .build();
     }

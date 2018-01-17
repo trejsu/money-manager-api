@@ -1,13 +1,17 @@
 package com.money.manager.model;
 
+import com.money.manager.model.money.Money;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -40,11 +44,8 @@ public class Budget {
     })
     private Category category;
 
-    @Column(name = "total")
-    private BigDecimal total;
-
-    @Column(name = "currency")
-    private String currency;
+    @Embedded
+    private Money total;
 
     @Column(name = "start_date")
     private String start;

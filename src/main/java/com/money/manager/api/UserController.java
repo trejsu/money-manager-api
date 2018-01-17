@@ -197,8 +197,7 @@ public class UserController {
         Budget toBudget() {
             return Budget.builder()
                     .category(category)
-                    .total(total.getAmount())
-                    .currency(total.getCurrency().getCurrencyCode())
+                    .total(total)
                     .start(dateRange.getStart().format(ISO_LOCAL_DATE))
                     .end(dateRange.getEnd().format(ISO_LOCAL_DATE))
                     .build();

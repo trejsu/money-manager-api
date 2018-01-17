@@ -1,5 +1,6 @@
 package com.money.manager.model;
 
+import com.money.manager.model.money.Money;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -7,11 +8,11 @@ import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,11 +32,8 @@ public class Wallet {
     @Column(name = "ID")
     private Integer id;
 
-    @Column(name = "amount")
-    private BigDecimal amount;
-
-    @Column(name = "currency")
-    private String currency;
+    @Embedded
+    private Money amount;
 
     @Column(name = "name")
     private String name;
@@ -45,10 +43,9 @@ public class Wallet {
     private List<Expense> expenses;
 
     @Builder
-    public Wallet(Integer id, BigDecimal amount, String currency, String name, List<Expense> expenses) {
+    public Wallet(Integer id, Money amount, String name, List<Expense> expenses) {
         this.id = id;
         this.amount = amount;
-        this.currency = currency;
         this.name = name;
         this.expenses = ofNullable(expenses).orElse(new ArrayList<>());
     }

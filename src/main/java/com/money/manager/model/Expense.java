@@ -1,5 +1,6 @@
 package com.money.manager.model;
 
+import com.money.manager.model.money.Money;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import lombok.Setter;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -38,11 +40,8 @@ public class Expense {
     @Column(name = "date")
     private String date;
 
-    @Column(name = "amount")
-    private BigDecimal amount;
-
-    @Column(name = "currency")
-    private String currency;
+    @Embedded
+    private Money amount;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumns({
