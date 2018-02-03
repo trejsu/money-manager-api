@@ -85,7 +85,6 @@
 			<version>1.8.3</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.springframework.integration/spring-integration-http -->
 		<dependency>
 			<groupId>org.springframework.integration</groupId>
 			<artifactId>spring-integration-http</artifactId>
@@ -98,13 +97,18 @@
 			<version>0.24.0.RELEASE</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310 -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>
 			<version>2.9.3</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.10.19</version>
+			<scope>test</scope>
+		</dependency>
 
 	</dependencies>
 
