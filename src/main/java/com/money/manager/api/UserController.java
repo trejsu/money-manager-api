@@ -67,13 +67,16 @@ public class UserController {
     }
 
     @GetMapping(value = "/{login}/wallets", produces = APPLICATION_JSON_VALUE)
-    public List<WalletDto> getWallets(@PathVariable("login") String login) {
-        return userService.getWallets(login);
+    public ResponseEntity<?> getWallets(@PathVariable("login") String login) {
+        return getResponseWithErrorHandling(() -> {
+            final List<WalletDto> wallets = userService.getWallets(login);
+            return ResponseEntity.ok(wallets);
+        });
     }
 
     @PostMapping(value = "/{login}/wallets", consumes = APPLICATION_JSON_VALUE)
-    public Integer createWallet(@PathVariable("login") String login, @RequestBody @Valid WalletDto walletDto) {
-        return userService.addWallet(login, walletDto);
+    public ResponseEntity<?> createWallet(@PathVariable("login") String login, @RequestBody @Valid WalletDto walletDto) {
+        return ResponseEntity.created(URI.create("")).body(userService.addWallet(login, walletDto));
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/summary", produces = APPLICATION_JSON_VALUE)

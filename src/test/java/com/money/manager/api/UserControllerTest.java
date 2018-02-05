@@ -1,5 +1,6 @@
 package com.money.manager.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.money.manager.dto.UserDto;
 import com.money.manager.dto.WalletDto;
 import com.money.manager.exception.UpdateFieldException;
@@ -28,7 +29,9 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -64,12 +67,9 @@ public class UserControllerTest {
     @Test
     @SneakyThrows
     public void shouldReturnNoContentWhenUpdatingUser() {
-        final String url = USERS_URL + "/cody.willis54";
+        final String login = "cody.willis54";
 
-        final ResultActions response = mockMvc.perform(put(url)
-                        .contentType(APPLICATION_JSON)
-                        .content("{}")
-                        .param("field", "firstName"));
+        final ResultActions response = updateUserWithSampleData(login);
 
         response.andExpect(status().isNoContent());
     }
@@ -78,18 +78,11 @@ public class UserControllerTest {
     @SneakyThrows
     public void shouldReturnNotFoundWhenUpdatingNotExistingUser() {
         String login = "cody.willis54";
-        final String url = USERS_URL + "/" + login;
         doThrow(new UserNotFoundException(login)).when(userService).updateUser(any(), any(), any());
 
-        final ResultActions response = mockMvc.perform(put(url)
-                .contentType(APPLICATION_JSON)
-                .content("{}")
-                .param("field", "firstName"));
+        final ResultActions response = updateUserWithSampleData(login);
 
-        response
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.problem", equalTo("User with login " + login + " was not found.")))
-                .andExpect(jsonPath("$.solution", equalTo("Check if provided login is correct and try again.")));
+        assertUserNotFound(login, response);
     }
 
     @Test
@@ -97,12 +90,10 @@ public class UserControllerTest {
     public void shouldReturnBadRequestWhenUpdatingNotExistingProperty() {
         final String problem = "Requested field cannot be updated.";
         final String solution = "Validate entered data and try again.";
+        final String login = "someLogin";
         doThrow(new UpdateFieldException(problem, solution)).when(userService).updateUser(any(), any(), any());
 
-        final ResultActions response = mockMvc.perform(put(USERS_URL + "/someLogin")
-                .contentType(APPLICATION_JSON)
-                .content("{}")
-                .param("field", "firstName"));
+        final ResultActions response = updateUserWithSampleData(login);
 
         response
                 .andExpect(status().isBadRequest())
@@ -141,12 +132,36 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$[*].amount.currency", containsInAnyOrder("PLN", "PLN", "USD", "GBP")));
     }
 
-    /*
+    @Test
+    @SneakyThrows
+    public void shouldReturnNotFoundWhenRequestingWalletForNotExistingUser() {
+        String login = "cody.willis54";
+        when(userService.getWallets(login)).thenThrow(new UserNotFoundException(login));
 
-    @GetMapping(value = "/{login}/wallets", produces = APPLICATION_JSON_VALUE)
-    public List<WalletDto> getWallets(@PathVariable("login") String login) {
-        return userService.getWallets(login);
+        final ResultActions response = mockMvc.perform(get(USERS_URL + "/" + login + "/wallets"));
+
+        assertUserNotFound(login, response);
     }
+
+    @Test
+    @SneakyThrows
+    public void shouldReturnIdOfCreatedWallet() {
+        String login = "cody.willis54";
+        final WalletDto walletDto = getSampleWallet();
+        String walletBody = new ObjectMapper().writeValueAsString(walletDto);
+        // todo: figure out why precise arguments dont work
+        when(userService.addWallet(any(), any())).thenReturn(100);
+
+        final ResultActions response = mockMvc.perform(post(USERS_URL + "/" + login + "/wallets")
+            .contentType(APPLICATION_JSON)
+            .content(walletBody));
+
+        response
+                .andExpect(status().isCreated())
+                .andExpect(content().json("100"));
+    }
+
+    /*
 
     @PostMapping(value = "/{login}/wallets", consumes = APPLICATION_JSON_VALUE)
     public Integer createWallet(@PathVariable("login") String login, @RequestBody @Valid WalletDto walletDto) {
@@ -268,5 +283,29 @@ public class UserControllerTest {
                 WalletDto.builder().amount(new Money(BigDecimal.valueOf(37.99), "PLN")).id(666).name("awesome account").build(),
                 WalletDto.builder().amount(new Money(BigDecimal.valueOf(2222), "GBP")).id(96).name("pocket").build()
         );
+    }
+
+    private WalletDto getSampleWallet() {
+        return WalletDto.builder()
+                .amount(new Money(BigDecimal.valueOf(37.99), "PLN"))
+                .id(666)
+                .name("awesome account")
+                .build();
+    }
+
+    @SneakyThrows
+    private ResultActions updateUserWithSampleData(String login) {
+        return mockMvc.perform(put(USERS_URL + "/" + login)
+                .contentType(APPLICATION_JSON)
+                .content("{}")
+                .param("field", "firstName"));
+    }
+
+    @SneakyThrows
+    private void assertUserNotFound(String login, ResultActions response) {
+        response
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.problem", equalTo("User with login " + login + " was not found.")))
+                .andExpect(jsonPath("$.solution", equalTo("Check if provided login is correct and try again.")));
     }
 }
