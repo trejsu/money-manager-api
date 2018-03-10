@@ -76,7 +76,10 @@ public class UserController {
 
     @PostMapping(value = "/{login}/wallets", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createWallet(@PathVariable("login") String login, @RequestBody @Valid WalletDto walletDto) {
-        return ResponseEntity.created(URI.create("")).body(userService.addWallet(login, walletDto));
+        return getResponseWithErrorHandling(() -> {
+            final Integer id = userService.addWallet(login, walletDto);
+            return ResponseEntity.created(URI.create("")).body(id);
+        });
     }
 
     @GetMapping(value = "/{login}/wallets/{id}/summary", produces = APPLICATION_JSON_VALUE)
