@@ -1,6 +1,5 @@
 package com.money.manager.exception;
 
-import org.springframework.http.ResponseEntity;
 
 public abstract class ErrorResponseException extends RuntimeException {
 
@@ -11,5 +10,7 @@ public abstract class ErrorResponseException extends RuntimeException {
         this.problem = new Problem(problem, solution);
     }
 
-    public abstract ResponseEntity<Problem> getResponseEntity();
+    public Problem getProblem() {
+        return problem;
+    }
 }

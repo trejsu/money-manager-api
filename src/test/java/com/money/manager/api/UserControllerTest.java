@@ -161,6 +161,23 @@ public class UserControllerTest {
                 .andExpect(content().json("100"));
     }
 
+    @Test
+    @SneakyThrows
+    public void shouldReturnNotFoundWhenCreatingWalletForNotExistingUser() {
+        String login = "cody.willis54";
+        final WalletDto walletDto = getSampleWallet();
+        String walletBody = new ObjectMapper().writeValueAsString(walletDto);
+        when(userService.addWallet(any(), any())).thenThrow(new UserNotFoundException(login));
+
+        final ResultActions response = mockMvc.perform(post(USERS_URL + "/" + login + "/wallets")
+                .contentType(APPLICATION_JSON)
+                .content(walletBody));
+
+        assertUserNotFound(login, response);
+    }
+
+
+
     /*
 
     @PostMapping(value = "/{login}/wallets", consumes = APPLICATION_JSON_VALUE)

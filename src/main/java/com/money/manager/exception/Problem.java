@@ -3,7 +3,7 @@ package com.money.manager.exception;
 import lombok.Value;
 
 @Value
-class Problem {
+public class Problem {
     String problem;
     String solution;
 }
